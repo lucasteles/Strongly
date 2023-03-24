@@ -187,7 +187,8 @@ public class MyDbContext : DbContext
 ```
 
 If you have lots of strongly type values you can use the package bellow to automatically set
-the `Strongly ValueConverter` on all your entities
+the `Strongly ValueConverter` on all your entities [![NuGet](https://img.shields.io/nuget/v/Strongly.EFCore.svg)](https://www.nuget.org/packages/Strongly.EFCore/)
+
 
 ```bash
 dotnet add package Strongly.EFCore
