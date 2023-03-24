@@ -53,7 +53,7 @@ To install the packages, add the references to your _csproj_ file, for example b
 dotnet add package Strongly 
 ```
 
-This adds a `<PackageReference>` to your project. You can additionally mark the package as `PrivateAsets="all"`
+This adds a `<PackageReference>` to your project. You can additionally mark the package as `PrivateAssets="all"`
 and `ExcludeAssets="runtime"`.
 
 > Setting `PrivateAssets="all"` means any projects referencing this one will not also get a reference to the _Strongly_
