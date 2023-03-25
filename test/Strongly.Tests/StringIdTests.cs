@@ -38,10 +38,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidStringId());
-
-        [Fact]
         public void DifferentValuesAreUnequal()
         {
             var foo1 = new StringId("value1");

@@ -65,10 +65,4 @@
     public partial struct ComparableStringId
     {
     }
-
-    [Strongly(backingType: StronglyType.String)]
-    partial struct InvalidStringId
-    {
-        static partial void Validate(string value) => throw new System.InvalidOperationException();
-    }
 }

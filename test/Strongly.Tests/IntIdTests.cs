@@ -41,10 +41,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidIntId());
-
-        [Fact]
         public void OverloadsWorkCorrectly()
         {
             var id = 12;

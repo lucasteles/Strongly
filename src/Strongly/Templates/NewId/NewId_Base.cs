@@ -4,17 +4,8 @@
 
     public TYPENAME(MassTransit.NewId value)
     {
-        Validate(value);
         Value = value;
     }
-    public TYPENAME()
-    {
-        var value = MassTransit.NewId.Next();
-        Validate(value);
-        Value = value;
-    }
-
-    static partial void Validate(MassTransit.NewId value);
     
     public static TYPENAME New() => new TYPENAME(MassTransit.NewId.Next());
     public static readonly TYPENAME Empty = new TYPENAME(MassTransit.NewId.Empty);

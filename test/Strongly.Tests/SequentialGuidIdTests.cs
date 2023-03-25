@@ -56,17 +56,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void NewShouldNotBeEmpty()
-        {
-            var id = new SequentialGuidId1();
-            Assert.NotEqual(id.Value, Guid.Empty);
-        }
-
-        [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidSequentialGuidId());
-
-        [Fact]
         public void ShouldGenerateInOrder()
         {
             var ids = Enumerable.Range(0, 1000).Select(_ => SequentialGuidId1.New()).ToArray();

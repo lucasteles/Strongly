@@ -78,10 +78,4 @@ namespace Strongly.IntegrationTests.Types
     public partial struct ComparableBigIntegerId
     {
     }
-
-    [Strongly(backingType: StronglyType.BigInteger)]
-    partial struct InvalidBigIntegerId
-    {
-        static partial void Validate(BigInteger value) => throw new InvalidOperationException();
-    }
 }

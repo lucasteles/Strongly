@@ -41,10 +41,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidLongId());
-
-        [Fact]
         public void OverloadsWorkCorrectly()
         {
             var id = 12L;
@@ -65,7 +61,7 @@ namespace Strongly.IntegrationTests
             var foo = new LongId(23L);
 
             //Assert.NotEqual(bar, foo); // does not compile
-            Assert.NotEqual((object)bar, (object)foo);
+            Assert.NotEqual((object) bar, (object) foo);
         }
 
         [Fact]
@@ -118,7 +114,7 @@ namespace Strongly.IntegrationTests
         [Fact]
         public void CanSerializeToNullableInt_WithNewtonsoftJsonProvider()
         {
-            var entity = new EntityWithNullableId { Id = null };
+            var entity = new EntityWithNullableId {Id = null};
 
             var json = NewtonsoftJsonSerializer.SerializeObject(entity);
             var deserialize =
@@ -228,7 +224,7 @@ namespace Strongly.IntegrationTests
                 .UseSqlite(connection)
                 .Options;
 
-            var original = new TestEntity { Id = new EfCoreLongId(123) };
+            var original = new TestEntity {Id = new EfCoreLongId(123)};
             using (var context = new TestDbContext(options))
             {
                 context.Database.EnsureCreated();
@@ -324,7 +320,7 @@ namespace Strongly.IntegrationTests
             {
                 context.Database.EnsureCreated();
                 context.Entities.Add(
-                    new TestEntity { Id = new EfCoreLongId(123) });
+                    new TestEntity {Id = new EfCoreLongId(123)});
                 context.SaveChanges();
             }
 

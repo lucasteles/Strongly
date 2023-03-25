@@ -4,17 +4,8 @@
 
     public TYPENAME(System.Guid value)
     {
-        Validate(value);
         Value = value;
     }
-    public TYPENAME()
-    {
-        var value = System.Guid.NewGuid();
-        Validate(value);
-        Value = value;
-    }
-
-    static partial void Validate(System.Guid value);
     
     public static TYPENAME New() => new TYPENAME(System.Guid.NewGuid());
     public static readonly TYPENAME Empty = new TYPENAME(System.Guid.Empty);

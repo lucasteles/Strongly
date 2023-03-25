@@ -79,11 +79,4 @@ namespace Strongly.IntegrationTests.Types
     public partial struct ComparableGuidCombId
     {
     }
-
-
-    [Strongly(backingType: StronglyType.GuidComb)]
-    partial struct InvalidGuidCombId
-    {
-        static partial void Validate(Guid value) => throw new InvalidOperationException();
-    }
 }

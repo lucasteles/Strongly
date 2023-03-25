@@ -63,10 +63,4 @@
     public partial struct ComparableLongId
     {
     }
-
-    [Strongly(backingType: StronglyType.Long)]
-    partial struct InvalidLongId
-    {
-        static partial void Validate(long value) => throw new System.InvalidOperationException();
-    }
 }

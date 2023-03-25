@@ -44,10 +44,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidBigIntegerId());
-
-        [Fact]
         public void DifferentValuesAreUnequal()
         {
             var foo1 = new BigIntegerId(1L);

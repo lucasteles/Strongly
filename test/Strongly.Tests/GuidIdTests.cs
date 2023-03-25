@@ -31,17 +31,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void NewShouldNotBeEmpty()
-        {
-            var id = new GuidId1();
-            Assert.NotEqual(id.Value, Guid.Empty);
-        }
-
-        [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidGuidId());
-
-        [Fact]
         public void DifferentValuesAreUnequal()
         {
             var foo1 = GuidId1.New();

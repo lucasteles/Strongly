@@ -4,19 +4,8 @@
 
     public TYPENAME(int value)
     {
-
-        Validate(value);
-        Value = value;
-        
-    }
-
-    public TYPENAME()
-    {
-        int value = 0;
-        Validate(value);
         Value = value;
     }
-    static partial void Validate(int value); 
     
     public static readonly TYPENAME Empty = new TYPENAME(0);
 

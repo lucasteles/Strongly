@@ -80,9 +80,4 @@ namespace Strongly.IntegrationTests.Types
     {
     }
 
-    [Strongly(backingType: StronglyType.SequentialGuid)]
-    partial struct InvalidSequentialGuidId
-    {
-        static partial void Validate(Guid value) => throw new InvalidOperationException();
-    }
 }

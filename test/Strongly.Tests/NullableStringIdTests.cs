@@ -41,10 +41,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidNullableStringId());
-
-        [Fact]
         public void OverloadsWorkCorrectly()
         {
             var id = "some-value";

@@ -5,16 +5,7 @@
     public TYPENAME(string value)
     {
         Value = value ?? throw new System.ArgumentNullException(nameof(value));
-        Validate(value);
     }
-    public TYPENAME()
-    {
-        var value = string.Empty;
-        Validate(value);
-        Value = value;
-    }
-    
-    static partial void Validate(string value);
 
     public static readonly TYPENAME Empty = new TYPENAME(string.Empty);
 

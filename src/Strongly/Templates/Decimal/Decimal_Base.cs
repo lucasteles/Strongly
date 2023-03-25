@@ -4,18 +4,8 @@
 
         public TYPENAME(decimal value)
         {
-            Validate(value);
             Value = value;
         }
-
-        public TYPENAME()
-        {
-            var value = decimal.Zero;
-            Validate(value);
-            Value = value;
-        }
-        
-        static partial void Validate(decimal value);
 
         public static readonly TYPENAME Empty = new TYPENAME(decimal.Zero);
 

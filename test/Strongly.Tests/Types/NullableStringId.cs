@@ -72,10 +72,4 @@ namespace Strongly.IntegrationTests.Types
     public partial struct ComparableNullableStringId
     {
     }
-
-    [Strongly(backingType: StronglyType.NullableString)]
-    partial struct InvalidNullableStringId
-    {
-        static partial void Validate(string? value) => throw new System.InvalidOperationException();
-    }
 }

@@ -279,10 +279,6 @@ namespace Strongly.IntegrationTests
         }
 
         [Fact]
-        public void ShouldThrowWhenInvalid() =>
-            Assert.Throws<InvalidOperationException>(() => new InvalidDecimalId());
-
-        [Fact]
         public void CanCompareDefaults()
         {
             ComparableDecimalId original = default;

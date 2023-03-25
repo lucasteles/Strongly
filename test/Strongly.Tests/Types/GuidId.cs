@@ -71,10 +71,4 @@ namespace Strongly.IntegrationTests.Types
     public partial struct ComparableGuidId
     {
     }
-
-    [Strongly(backingType: StronglyType.Guid)]
-    partial struct InvalidGuidId
-    {
-        static partial void Validate(Guid value) => throw new InvalidOperationException();
-    }
 }

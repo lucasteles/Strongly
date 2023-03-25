@@ -4,18 +4,8 @@
 
     public TYPENAME(System.Numerics.BigInteger value)
     {
-        Validate(value);
         Value = value;
     }
-
-    public TYPENAME()
-    {
-        var value = System.Numerics.BigInteger.Zero;
-        Validate(value);
-        Value = value;
-    }
-    
-    static partial void Validate(System.Numerics.BigInteger value);
     
     public static readonly TYPENAME Empty = new TYPENAME(System.Numerics.BigInteger.Zero);
 

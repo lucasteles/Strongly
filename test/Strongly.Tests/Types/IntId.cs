@@ -65,10 +65,4 @@ namespace Strongly.IntegrationTests.Types
     public partial struct ComparableIntId
     {
     }
-
-    [Strongly(backingType: StronglyType.Int)]
-    partial struct InvalidIntId
-    {
-        static partial void Validate(int value) => throw new InvalidOperationException();
-    }
 }

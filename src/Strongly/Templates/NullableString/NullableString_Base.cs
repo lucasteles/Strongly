@@ -4,18 +4,8 @@
 
     public TYPENAME(string? value)
     {
-        Validate(value);
         Value = value;
     }
-
-    public TYPENAME()
-    {
-        string? value = null;
-        Validate(value);
-        Value = value;
-    }
-    
-    static partial void Validate(string? value);
     
     public static readonly TYPENAME Empty = new TYPENAME(string.Empty);
 

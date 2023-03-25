@@ -4,18 +4,8 @@
 
     public TYPENAME(System.Guid value)
     {
-        Validate(value);
         Value = value;
     }
-
-    public TYPENAME()
-    {
-        var value = NextComb();
-        Validate(value);
-        Value = value;
-    }
-    
-    static partial void Validate(System.Guid value);
     public static TYPENAME New() => new TYPENAME(NextComb());
 
     static System.Guid NextComb()

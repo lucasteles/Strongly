@@ -4,18 +4,8 @@
 
     public TYPENAME(long value)
     {
-        Validate(value);
         Value = value;
     }
-
-    public TYPENAME()
-    {
-        long value = 0L;
-        Validate(value);
-        Value = value;
-    }
-    
-    static partial void Validate(long value);
     
     public static readonly TYPENAME Empty = new TYPENAME(0);
 

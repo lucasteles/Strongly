@@ -77,10 +77,4 @@
     {
     }
 
-    [Strongly(backingType: StronglyType.MassTransitNewId)]
-    partial struct InvalidNewId
-    {
-        static partial void Validate(MassTransit.NewId value) =>
-            throw new System.InvalidOperationException();
-    }
 }

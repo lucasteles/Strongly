@@ -78,9 +78,4 @@ namespace Strongly.IntegrationTests.Types
     {
     }
 
-    [Strongly(backingType: StronglyType.Decimal)]
-    partial struct InvalidDecimalId
-    {
-        static partial void Validate(decimal value) => throw new InvalidOperationException();
-    }
 }
