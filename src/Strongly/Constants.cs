@@ -1,9 +1,8 @@
-namespace Strongly
+namespace Strongly;
+
+static class Constants
 {
-    static class Constants
-    {
-        public const string Usage = nameof(Usage);
-    }
+    public const string Usage = nameof(Usage);
 }
 
 // TODO: types

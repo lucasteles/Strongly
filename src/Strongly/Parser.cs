@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -17,27 +16,14 @@ static class Parser
 
     public static bool IsStructTargetForGeneration(SyntaxNode node)
         => node is StructDeclarationSyntax {AttributeLists.Count: > 0} dec
-           && HasEligibleAttributes(dec.AttributeLists.SelectMany(c => c.Attributes));
+           && dec.Modifiers.Any(SyntaxKind.PartialKeyword);
 
     public static bool IsAttributeTargetForGeneration(SyntaxNode node)
-        => node is AttributeListSyntax {Target.Identifier: var id} list
-           && id.IsKind(SyntaxKind.AssemblyKeyword)
-           && HasEligibleAttributes(list.Attributes);
+        => node is AttributeListSyntax {Target.Identifier: var id}
+           && id.IsKind(SyntaxKind.AssemblyKeyword);
 
-    static string? ExtractName(NameSyntax? name) =>
-        name switch
-        {
-            SimpleNameSyntax ins => ins.Identifier.Text,
-            QualifiedNameSyntax qns => qns.Right.Identifier.Text,
-            _ => null
-        };
-
-    static bool HasEligibleAttributes(IEnumerable<AttributeSyntax> attrs) =>
-        attrs.Any(x => ExtractName(x.Name)?.StartsWith("Strongly") == true);
-
-
-    public static ComparableSyntax<StructDeclarationSyntax>?
-        GetStructSemanticTargetForGeneration(GeneratorSyntaxContext context)
+    public static StructDeclarationSyntax? GetStructSemanticTargetForGeneration(
+        GeneratorSyntaxContext context)
     {
         var structDeclarationSyntax = (StructDeclarationSyntax) context.Node;
 
@@ -52,17 +38,14 @@ static class Parser
             var fullName = attributeContainingTypeSymbol.ToDisplayString();
 
             if (fullName == StronglyAttribute)
-                return new ComparableSyntax<StructDeclarationSyntax>(
-                    fullName,
-                    structDeclarationSyntax);
+                return structDeclarationSyntax;
         }
 
         return null;
     }
 
-    public static ComparableSyntax<AttributeSyntax>?
-        GetAssemblyAttributeSemanticTargetForGeneration(
-            GeneratorSyntaxContext context)
+    public static AttributeSyntax? GetAssemblyAttributeSemanticTargetForGeneration(
+        GeneratorSyntaxContext context)
     {
         var attributeListSyntax = (AttributeListSyntax) context.Node;
 
@@ -76,41 +59,118 @@ static class Parser
             var fullName = attributeContainingTypeSymbol.ToDisplayString();
 
             if (fullName == StronglyDefaultsAttribute)
-                return new ComparableSyntax<AttributeSyntax>(fullName, attributeSyntax);
+                return attributeSyntax;
         }
 
         return null;
     }
 
-    public static
-        IReadOnlyCollection<(string Name, string NameSpace, StronglyConfiguration Config,
-            ParentClass? Parent)>
-        GetTypesToGenerate(
-            Compilation compilation,
-            ImmutableArray<ComparableSyntax<StructDeclarationSyntax>> targets,
-            Action<Diagnostic> reportDiagnostic,
-            CancellationToken ct)
+    public static StronglyContext? GetGenerationContext(
+        SemanticModel semanticModel,
+        StructDeclarationSyntax? structDeclarationSyntax,
+        CancellationToken ct)
     {
-        var idsToGenerate =
-            new List<(
-                string Name,
-                string NameSpace,
-                StronglyConfiguration Config,
-                ParentClass? Parent)>();
+        if (structDeclarationSyntax is null)
+            return null;
+
+        ct.ThrowIfCancellationRequested();
+
+        if (semanticModel.GetDeclaredSymbol(structDeclarationSyntax, ct) is not
+            { } structSymbol)
+            return null;
+
+        StronglyConfiguration? config = null;
+        var hasMisconfiguredInput = false;
+
+        foreach (var attribute in structSymbol.GetAttributes())
+        {
+            if ($"{attribute.AttributeClass?.ContainingNamespace.MetadataName}.{attribute.AttributeClass?.MetadataName}" !=
+                StronglyAttribute)
+                continue;
+
+            var backingType = StronglyType.Default;
+            var converter = StronglyConverter.Default;
+            var implementations = StronglyImplementations.Default;
+
+            if (!attribute.ConstructorArguments.IsEmpty)
+            {
+                var args = attribute.ConstructorArguments;
+
+                foreach (var arg in args)
+                    if (arg.Kind == TypedConstantKind.Error)
+                        hasMisconfiguredInput = true;
+
+                switch (args.Length)
+                {
+                    case 3:
+                        implementations = (StronglyImplementations) args[2].Value!;
+                        goto case 2;
+                    case 2:
+                        converter = (StronglyConverter) args[1].Value!;
+                        goto case 1;
+                    case 1:
+                        backingType = (StronglyType) args[0].Value!;
+                        break;
+                }
+            }
+
+            if (!attribute.NamedArguments.IsEmpty)
+                foreach (var arg in attribute.NamedArguments)
+                {
+                    var typedConstant = arg.Value;
+                    if (typedConstant.Kind == TypedConstantKind.Error)
+                        hasMisconfiguredInput = true;
+                    else
+                        switch (arg.Key)
+                        {
+                            case "backingType":
+                                backingType = (StronglyType) typedConstant.Value!;
+                                break;
+                            case "converters":
+                                converter = (StronglyConverter) typedConstant.Value!;
+                                break;
+                            case "implementations":
+                                implementations =
+                                    (StronglyImplementations) typedConstant.Value!;
+                                break;
+                        }
+                }
+
+            if (hasMisconfiguredInput)
+                break;
+
+            config = new StronglyConfiguration(backingType, converter, implementations);
+            break;
+        }
+
+        if (config is null) return null;
+
+        var nameSpace = GetNameSpace(structDeclarationSyntax);
+        var parentClass = GetParentClasses(structDeclarationSyntax);
+        var name = structSymbol.Name;
+
+        return new(Name: name, NameSpace: nameSpace, Config: config.Value, Parent: parentClass);
+    }
+
+    public static IReadOnlyCollection<StronglyContext> GetTypesToGenerate(
+        Compilation compilation,
+        ImmutableArray<StructDeclarationSyntax> targets,
+        Action<Diagnostic> reportDiagnostic,
+        CancellationToken ct)
+    {
+        var idsToGenerate = new List<StronglyContext>();
 
         var idAttribute = compilation.GetTypeByMetadataName(StronglyAttribute);
 
         if (idAttribute is null) return idsToGenerate;
 
-        foreach (var structDeclaration in targets)
+        foreach (var structDeclarationSyntax in targets)
         {
-            var structDeclarationSyntax = structDeclaration.Syntax;
             ct.ThrowIfCancellationRequested();
 
             var semanticModel =
                 compilation.GetSemanticModel(structDeclarationSyntax.SyntaxTree);
-            if (semanticModel.GetDeclaredSymbol(structDeclarationSyntax) is not
-                { } structSymbol)
+            if (semanticModel.GetDeclaredSymbol(structDeclarationSyntax) is not { } structSymbol)
                 continue;
 
             StronglyConfiguration? config = null;
@@ -172,15 +232,6 @@ static class Parser
                 if (hasMisconfiguredInput)
                     break;
 
-                if (!converter.IsValidFlags())
-                    reportDiagnostic(InvalidConverterDiagnostic.Create(structDeclarationSyntax));
-
-                if (!Enum.IsDefined(typeof(StronglyType), backingType))
-                    reportDiagnostic(InvalidBackingTypeDiagnostic.Create(structDeclarationSyntax));
-
-                if (!implementations.IsValidFlags())
-                    reportDiagnostic(
-                        InvalidImplementationsDiagnostic.Create(structDeclarationSyntax));
 
                 config = new StronglyConfiguration(backingType, converter, implementations);
                 break;
@@ -204,24 +255,17 @@ static class Parser
             var parentClass = GetParentClasses(structDeclarationSyntax);
             var name = structSymbol.Name;
 
-            idsToGenerate.Add((Name: name, NameSpace: nameSpace, Config: config.Value,
+            idsToGenerate.Add(new(Name: name, NameSpace: nameSpace, Config: config.Value,
                 Parent: parentClass));
         }
 
         return idsToGenerate;
     }
 
-    public static StronglyConfiguration? GetDefaults(
-        ImmutableArray<ComparableSyntax<AttributeSyntax>> defaults,
-        Compilation compilation,
-        Action<Diagnostic> reportDiagnostic)
+    public static StronglyConfiguration? GetDefaults(Compilation compilation)
     {
-        if (defaults.IsDefaultOrEmpty)
-            return null;
-
         var assemblyAttributes = compilation.Assembly.GetAttributes();
-        if (assemblyAttributes.IsDefaultOrEmpty)
-            return null;
+        if (assemblyAttributes.IsDefaultOrEmpty) return null;
 
         var defaultsAttribute = compilation.GetTypeByMetadataName(StronglyDefaultsAttribute);
         if (defaultsAttribute is null)
@@ -283,27 +327,7 @@ static class Parser
             if (hasMisconfiguredInput)
                 break;
 
-            SyntaxNode? syntax = null;
-            if (!converter.IsValidFlags())
-            {
-                syntax = attribute.ApplicationSyntaxReference?.GetSyntax();
-                if (syntax is not null) reportDiagnostic(InvalidConverterDiagnostic.Create(syntax));
-            }
-
-            if (!Enum.IsDefined(typeof(StronglyType), backingType))
-            {
-                syntax ??= attribute.ApplicationSyntaxReference?.GetSyntax();
-                if (syntax is not null)
-                    reportDiagnostic(InvalidBackingTypeDiagnostic.Create(syntax));
-            }
-
-            if (!implementations.IsValidFlags())
-            {
-                syntax ??= attribute.ApplicationSyntaxReference?.GetSyntax();
-                if (syntax is not null)
-                    reportDiagnostic(InvalidImplementationsDiagnostic.Create(syntax));
-            }
-
+            var location = attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation();
             return new StronglyConfiguration(backingType, converter, implementations);
         }
 
@@ -312,7 +336,6 @@ static class Parser
 
     static string GetNameSpace(SyntaxNode structSymbol)
     {
-        // determine the namespace the struct is declared in, if any
         var potentialNamespaceParent = structSymbol.Parent;
         while (potentialNamespaceParent is not (
                null
@@ -344,10 +367,10 @@ static class Parser
         while (parentIdClass is not null && IsAllowedKind(parentIdClass.Kind()))
         {
             parentClass = new ParentClass(
-                keyword: parentIdClass.Keyword.ValueText,
-                name: parentIdClass.Identifier.ToString() + parentIdClass.TypeParameterList,
-                constraints: parentIdClass.ConstraintClauses.ToString(),
-                child: parentClass);
+                Keyword: parentIdClass.Keyword.ValueText,
+                Name: parentIdClass.Identifier.ToString() + parentIdClass.TypeParameterList,
+                Constraints: parentIdClass.ConstraintClauses.ToString(),
+                Child: parentClass);
 
             parentIdClass = parentIdClass.Parent as TypeDeclarationSyntax;
         }
@@ -361,20 +384,10 @@ static class Parser
     }
 }
 
-readonly struct ComparableSyntax<T> : IEquatable<ComparableSyntax<T>>
-{
-    public string Name { get; }
-    public T Syntax { get; }
+record ParentClass(string Keyword, string Name, string Constraints, ParentClass? Child);
 
-    public ComparableSyntax(string name, T syntax)
-    {
-        Name = name;
-        Syntax = syntax;
-    }
-
-    public override bool Equals(object? obj) =>
-        obj is ComparableSyntax<T> customObject && Equals(customObject);
-
-    public bool Equals(ComparableSyntax<T> other) => Name == other.Name;
-    public override int GetHashCode() => Name.GetHashCode();
-}
+record StronglyContext(
+    string Name,
+    string NameSpace,
+    StronglyConfiguration Config,
+    ParentClass? Parent);
