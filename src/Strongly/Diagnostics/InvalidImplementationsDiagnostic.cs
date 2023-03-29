@@ -11,10 +11,10 @@ static class InvalidImplementationsDiagnostic
 
     internal const string Title = "Invalid implementations value";
 
-    public static Diagnostic Create(Location currentNode) =>
+    public static Diagnostic Create(Location? currentNode) =>
         Diagnostic.Create(
             new DiagnosticDescriptor(
                 Id, Title, Message, category: Constants.Usage,
                 defaultSeverity: DiagnosticSeverity.Warning, isEnabledByDefault: true),
-            currentNode);
+            currentNode ?? Location.None);
 }

@@ -37,7 +37,7 @@ public class StronglyGenerator : IIncrementalGenerator
                 static (ctx, _) => Parser.GetAssemblyAttributeSemanticTargetForGeneration(ctx))
             .Where(x => x is not null)
             .Combine(context.CompilationProvider)
-            .Select((arg, _) => Parser.GetDefaults(arg.Right))
+            .Select((arg, ct) => Parser.GetDefaults(arg.Right, ct))
             .Collect();
 
         var structDeclarations =
@@ -76,34 +76,33 @@ public class StronglyGenerator : IIncrementalGenerator
     {
         if (valuesToGenerate.IsDefaultOrEmpty) return;
         var sb = new StringBuilder();
-        foreach (var (name, nameSpace, config, parentClass) in valuesToGenerate)
+        foreach (var item in valuesToGenerate)
         {
-            if (!config.Converters.IsValidFlags())
-                context.ReportDiagnostic(InvalidConverterDiagnostic
-                    .Create(Location.None));
-            
-            if (!Enum.IsDefined(typeof(StronglyType), config.BackingType))
-                context.ReportDiagnostic(InvalidBackingTypeDiagnostic
-                    .Create(Location.None));
-            
-            if (!config.Implementations.IsValidFlags())
-                context.ReportDiagnostic(InvalidImplementationsDiagnostic
-                    .Create(Location.None));
+            Diagnostic(context, item.Config);
 
             sb.Clear();
-            var result = SourceGenerationHelper.CreateStrongValue(
-                nameSpace,
-                name,
-                parentClass,
-                config.Converters,
-                config.BackingType,
-                config.Implementations,
-                sb);
+            var result = SourceGenerationHelper.CreateStrongValue(item, sb);
             var fileName = SourceGenerationHelper.CreateSourceName(
-                nameSpace,
-                parentClass,
-                name);
+                item.NameSpace,
+                item.Parent,
+                item.Name);
+
             context.AddSource(fileName, SourceText.From(result, Encoding.UTF8));
         }
+    }
+
+    static void Diagnostic(SourceProductionContext context, StronglyConfiguration config)
+    {
+        if (!config.Converters.IsValidFlags())
+            context.ReportDiagnostic(InvalidConverterDiagnostic
+                .Create(config.Location));
+
+        if (!Enum.IsDefined(typeof(StronglyType), config.BackingType))
+            context.ReportDiagnostic(InvalidBackingTypeDiagnostic
+                .Create(config.Location));
+
+        if (!config.Implementations.IsValidFlags())
+            context.ReportDiagnostic(InvalidImplementationsDiagnostic
+                .Create(config.Location));
     }
 }

@@ -2,8 +2,8 @@ using System;
 
 namespace Strongly.IntegrationTests;
 
-[Strongly(StronglyType.Int)]
-partial struct FooValue
+[Strongly]
+readonly partial struct FooValue
 {
 }
 

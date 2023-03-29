@@ -15,17 +15,20 @@ static class Parser
     const string StronglyDefaultsAttribute = "Strongly.StronglyDefaultsAttribute";
 
     public static bool IsStructTargetForGeneration(SyntaxNode node)
-        => node is StructDeclarationSyntax {AttributeLists.Count: > 0} dec
-           && dec.Modifiers.Any(SyntaxKind.PartialKeyword);
+        => node is TypeDeclarationSyntax {AttributeLists.Count: > 0} t
+           && t.Modifiers.Any(SyntaxKind.PartialKeyword)
+           &&
+           (node.IsKind(SyntaxKind.StructDeclaration) ||
+            node.IsKind(SyntaxKind.RecordStructDeclaration));
 
     public static bool IsAttributeTargetForGeneration(SyntaxNode node)
         => node is AttributeListSyntax {Target.Identifier: var id}
            && id.IsKind(SyntaxKind.AssemblyKeyword);
 
-    public static StructDeclarationSyntax? GetStructSemanticTargetForGeneration(
+    public static TypeDeclarationSyntax? GetStructSemanticTargetForGeneration(
         GeneratorSyntaxContext context)
     {
-        var structDeclarationSyntax = (StructDeclarationSyntax) context.Node;
+        var structDeclarationSyntax = (TypeDeclarationSyntax) context.Node;
 
         foreach (var attributeListSyntax in structDeclarationSyntax.AttributeLists)
         foreach (var attributeSyntax in attributeListSyntax.Attributes)
@@ -67,15 +70,15 @@ static class Parser
 
     public static StronglyContext? GetGenerationContext(
         SemanticModel semanticModel,
-        StructDeclarationSyntax? structDeclarationSyntax,
+        TypeDeclarationSyntax? declarationSyntax,
         CancellationToken ct)
     {
-        if (structDeclarationSyntax is null)
+        if (declarationSyntax is null)
             return null;
 
         ct.ThrowIfCancellationRequested();
 
-        if (semanticModel.GetDeclaredSymbol(structDeclarationSyntax, ct) is not
+        if (semanticModel.GetDeclaredSymbol(declarationSyntax, ct) is not
             { } structSymbol)
             return null;
 
@@ -139,130 +142,23 @@ static class Parser
             if (hasMisconfiguredInput)
                 break;
 
-            config = new StronglyConfiguration(backingType, converter, implementations);
+            var location = attribute.ApplicationSyntaxReference?.GetSyntax(ct).GetLocation();
+            config = new StronglyConfiguration(backingType, converter, implementations, location);
             break;
         }
 
         if (config is null) return null;
 
-        var nameSpace = GetNameSpace(structDeclarationSyntax);
-        var parentClass = GetParentClasses(structDeclarationSyntax);
+        var nameSpace = GetNameSpace(declarationSyntax);
+        var parentClass = GetParentClasses(declarationSyntax);
+        var isRecord = declarationSyntax.Keyword.IsKind(SyntaxKind.RecordKeyword);
         var name = structSymbol.Name;
 
-        return new(Name: name, NameSpace: nameSpace, Config: config.Value, Parent: parentClass);
+        return new(Name: name, NameSpace: nameSpace,
+            Config: config.Value, Parent: parentClass, IsRecord: isRecord);
     }
 
-    public static IReadOnlyCollection<StronglyContext> GetTypesToGenerate(
-        Compilation compilation,
-        ImmutableArray<StructDeclarationSyntax> targets,
-        Action<Diagnostic> reportDiagnostic,
-        CancellationToken ct)
-    {
-        var idsToGenerate = new List<StronglyContext>();
-
-        var idAttribute = compilation.GetTypeByMetadataName(StronglyAttribute);
-
-        if (idAttribute is null) return idsToGenerate;
-
-        foreach (var structDeclarationSyntax in targets)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            var semanticModel =
-                compilation.GetSemanticModel(structDeclarationSyntax.SyntaxTree);
-            if (semanticModel.GetDeclaredSymbol(structDeclarationSyntax) is not { } structSymbol)
-                continue;
-
-            StronglyConfiguration? config = null;
-            var hasMisconfiguredInput = false;
-
-            foreach (var attribute in structSymbol.GetAttributes())
-            {
-                if (!idAttribute.Equals(attribute.AttributeClass, SymbolEqualityComparer.Default))
-                    continue;
-
-                var backingType = StronglyType.Default;
-                var converter = StronglyConverter.Default;
-                var implementations = StronglyImplementations.Default;
-
-                if (!attribute.ConstructorArguments.IsEmpty)
-                {
-                    var args = attribute.ConstructorArguments;
-
-                    foreach (var arg in args)
-                        if (arg.Kind == TypedConstantKind.Error)
-                            hasMisconfiguredInput = true;
-
-                    switch (args.Length)
-                    {
-                        case 3:
-                            implementations = (StronglyImplementations) args[2].Value!;
-                            goto case 2;
-                        case 2:
-                            converter = (StronglyConverter) args[1].Value!;
-                            goto case 1;
-                        case 1:
-                            backingType = (StronglyType) args[0].Value!;
-                            break;
-                    }
-                }
-
-                if (!attribute.NamedArguments.IsEmpty)
-                    foreach (var arg in attribute.NamedArguments)
-                    {
-                        var typedConstant = arg.Value;
-                        if (typedConstant.Kind == TypedConstantKind.Error)
-                            hasMisconfiguredInput = true;
-                        else
-                            switch (arg.Key)
-                            {
-                                case "backingType":
-                                    backingType = (StronglyType) typedConstant.Value!;
-                                    break;
-                                case "converters":
-                                    converter = (StronglyConverter) typedConstant.Value!;
-                                    break;
-                                case "implementations":
-                                    implementations =
-                                        (StronglyImplementations) typedConstant.Value!;
-                                    break;
-                            }
-                    }
-
-                if (hasMisconfiguredInput)
-                    break;
-
-
-                config = new StronglyConfiguration(backingType, converter, implementations);
-                break;
-            }
-
-            if (config is null || hasMisconfiguredInput)
-                continue;
-
-            var hasPartialModifier = false;
-            foreach (var modifier in structDeclarationSyntax.Modifiers)
-                if (modifier.IsKind(SyntaxKind.PartialKeyword))
-                {
-                    hasPartialModifier = true;
-                    break;
-                }
-
-            if (!hasPartialModifier)
-                reportDiagnostic(NotPartialDiagnostic.Create(structDeclarationSyntax));
-
-            var nameSpace = GetNameSpace(structDeclarationSyntax);
-            var parentClass = GetParentClasses(structDeclarationSyntax);
-            var name = structSymbol.Name;
-
-            idsToGenerate.Add(new(Name: name, NameSpace: nameSpace, Config: config.Value,
-                Parent: parentClass));
-        }
-
-        return idsToGenerate;
-    }
-
-    public static StronglyConfiguration? GetDefaults(Compilation compilation)
+    public static StronglyConfiguration? GetDefaults(Compilation compilation, CancellationToken ct)
     {
         var assemblyAttributes = compilation.Assembly.GetAttributes();
         if (assemblyAttributes.IsDefaultOrEmpty) return null;
@@ -327,8 +223,8 @@ static class Parser
             if (hasMisconfiguredInput)
                 break;
 
-            var location = attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation();
-            return new StronglyConfiguration(backingType, converter, implementations);
+            var location = attribute.ApplicationSyntaxReference?.GetSyntax(ct).GetLocation();
+            return new StronglyConfiguration(backingType, converter, implementations, location);
         }
 
         return null;
@@ -386,8 +282,9 @@ static class Parser
 
 record ParentClass(string Keyword, string Name, string Constraints, ParentClass? Child);
 
-record StronglyContext(
-    string Name,
+record StronglyContext(string Name,
     string NameSpace,
     StronglyConfiguration Config,
-    ParentClass? Parent);
+    ParentClass? Parent,
+    bool IsRecord
+);

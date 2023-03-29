@@ -11,10 +11,10 @@ static class InvalidConverterDiagnostic
 
     internal const string Title = "Invalid converter";
 
-    public static Diagnostic Create(Location location) =>
+    public static Diagnostic Create(Location? location) =>
         Diagnostic.Create(
             new DiagnosticDescriptor(
                 Id, Title, Message, category: Constants.Usage,
                 defaultSeverity: DiagnosticSeverity.Warning, isEnabledByDefault: true),
-            location);
+            location ?? Location.None);
 }

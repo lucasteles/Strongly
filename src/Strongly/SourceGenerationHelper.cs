@@ -6,16 +6,9 @@ namespace Strongly;
 
 static class SourceGenerationHelper
 {
-    public static string CreateStrongValue(
-        string valueNamespace,
-        string valueName,
-        ParentClass? parentClass,
-        StronglyConverter converters,
-        StronglyType backingType,
-        StronglyImplementations implementations,
-        StringBuilder? sb)
+    public static string CreateStrongValue(StronglyContext ctx, StringBuilder? sb)
     {
-        var resources = backingType switch
+        var resources = ctx.Config.BackingType switch
         {
             StronglyType.Guid => EmbeddedSources.GuidResources,
             StronglyType.SequentialGuid => EmbeddedSources.SequentialGuidResources,
@@ -28,38 +21,32 @@ static class SourceGenerationHelper
                 EmbeddedSources.NullableStringResources,
             StronglyType.MassTransitNewId => EmbeddedSources.NewIdResources,
             StronglyType.BigInteger => EmbeddedSources.BigIntegerResources,
-            _ => throw new ArgumentException("Unknown backing type: " + backingType,
-                nameof(backingType)),
+            _ => throw new ArgumentException("Unknown backing type: " + ctx.Config.BackingType,
+                nameof(ctx.Config.BackingType)),
         };
 
-        return CreateStrongValue(valueNamespace, valueName, parentClass, converters,
-            implementations,
-            resources, sb);
+        return CreateStrongValue(ctx, resources, sb);
     }
 
     static string CreateStrongValue(
-        string valueNamespace,
-        string valueName,
-        ParentClass? parentClass,
-        StronglyConverter converters,
-        StronglyImplementations implementations,
+        StronglyContext ctx,
         EmbeddedSources.ResourceCollection resources,
         StringBuilder? sb)
     {
-        if (string.IsNullOrEmpty(valueName))
-            throw new ArgumentException("Value cannot be null or empty.", nameof(valueName));
+        if (string.IsNullOrEmpty(ctx.Name))
+            throw new ArgumentException("Value cannot be null or empty.", nameof(ctx.Name));
 
+        if (ctx.Config.Implementations == StronglyImplementations.Default)
+            throw new ArgumentException(
+                "Cannot use default implementations - must provide concrete values or None",
+                nameof(ctx.Config.Implementations));
+
+        var converters = ctx.Config.Converters;
         if (converters == StronglyConverter.Default)
             throw new ArgumentException(
                 "Cannot use default converter - must provide concrete values or None",
-                nameof(converters));
+                nameof(ctx.Config.Converters));
 
-        if (implementations == StronglyImplementations.Default)
-            throw new ArgumentException(
-                "Cannot use default implementations - must provide concrete values or None",
-                nameof(implementations));
-
-        var hasNamespace = !string.IsNullOrEmpty(valueNamespace);
 
         var useSchemaFilter = converters.IsSet(StronglyConverter.SwaggerSchemaFilter);
         var useTypeConverter = converters.IsSet(StronglyConverter.TypeConverter);
@@ -69,8 +56,11 @@ static class SourceGenerationHelper
             converters.IsSet(StronglyConverter.EfValueConverter);
         var useDapperTypeHandler = converters.IsSet(StronglyConverter.DapperTypeHandler);
 
-        var useIEquatable = implementations.IsSet(StronglyImplementations.IEquatable);
-        var useIComparable = implementations.IsSet(StronglyImplementations.IComparable);
+        var implementations = ctx.Config.Implementations;
+        var useIEquatable =
+            !ctx.IsRecord && implementations.IsSet(StronglyImplementations.IEquatable);
+        var useIComparable =
+            !ctx.IsRecord && implementations.IsSet(StronglyImplementations.IComparable);
 
         var parentsCount = 0;
 
@@ -81,26 +71,28 @@ static class SourceGenerationHelper
 
         if (resources.NullableEnable) sb.AppendLine("#nullable enable");
 
+        var hasNamespace = !string.IsNullOrEmpty(ctx.NameSpace);
         if (hasNamespace)
             sb
                 .Append("namespace ")
-                .Append(valueNamespace)
+                .Append(ctx.NameSpace)
                 .AppendLine(@"
 {");
 
-        while (parentClass is not null)
+        var parent = ctx.Parent;
+        while (parent is not null)
         {
             sb
                 .Append("    partial ")
-                .Append(parentClass.Keyword)
+                .Append(parent.Keyword)
                 .Append(' ')
-                .Append(parentClass.Name)
+                .Append(parent.Name)
                 .Append(' ')
-                .Append(parentClass.Constraints)
+                .Append(parent.Constraints)
                 .AppendLine(@"
     {");
             parentsCount++;
-            parentClass = parentClass.Child;
+            parent = parent.Child;
         }
 
         if (useNewtonsoftJson) sb.AppendLine(EmbeddedSources.NewtonsoftJsonAttributeSource);
@@ -108,7 +100,10 @@ static class SourceGenerationHelper
         if (useTypeConverter) sb.AppendLine(EmbeddedSources.TypeConverterAttributeSource);
         if (useSchemaFilter) sb.AppendLine(EmbeddedSources.SwaggerSchemaFilterAttributeSource);
 
-        sb.Append(resources.BaseId);
+        sb.Append(ctx.IsRecord
+            ? resources.Base.Replace("struct TYPENAME", "record struct TYPENAME")
+            : resources.Base);
+
         ReplaceInterfaces(sb, useIEquatable, useIComparable);
 
         // IEquatable is already implemented whether or not the interface is implemented
@@ -120,7 +115,8 @@ static class SourceGenerationHelper
         if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson);
         if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter);
 
-        sb.Replace("TYPENAME", valueName);
+        sb.Replace("TYPENAME", ctx.Name);
+
         sb.AppendLine(@"    }");
 
         for (var i = 0; i < parentsCount; i++) sb.AppendLine(@"    }");
@@ -130,29 +126,18 @@ static class SourceGenerationHelper
         return sb.ToString();
     }
 
-    static void ReplaceInterfaces(StringBuilder sb, bool useIEquatable,
+    static void ReplaceInterfaces(StringBuilder sb,
+        bool useIEquatable,
         bool useIComparable)
     {
         var interfaces = new List<string>();
-
-        if (useIComparable)
-        {
-            interfaces.Add("System.IComparable<TYPENAME>");
-        }
-
-        if (useIEquatable)
-        {
-            interfaces.Add("System.IEquatable<TYPENAME>");
-        }
+        if (useIComparable) interfaces.Add("System.IComparable<TYPENAME>");
+        if (useIEquatable) interfaces.Add("System.IEquatable<TYPENAME>");
 
         if (interfaces.Count > 0)
-        {
             sb.Replace("INTERFACES", string.Join(", ", interfaces));
-        }
         else
-        {
             sb.Replace(": INTERFACES", string.Empty);
-        }
     }
 
     internal static string CreateSourceName(string nameSpace, ParentClass? parent, string name)

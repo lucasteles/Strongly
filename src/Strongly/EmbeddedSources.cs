@@ -212,7 +212,7 @@ static class EmbeddedSources
         public string SwaggerSchemaFilter { get; }
         public string Header { get; }
         public bool NullableEnable { get; }
-        public string BaseId { get; }
+        public string Base { get; }
         public string Newtonsoft { get; }
         public string SystemTextJson { get; }
         public string TypeConverter { get; }
@@ -222,7 +222,7 @@ static class EmbeddedSources
 
         public ResourceCollection(
             string header,
-            string baseId,
+            string @base,
             string newtonsoft,
             string systemTextJson,
             string typeConverter,
@@ -233,7 +233,7 @@ static class EmbeddedSources
             bool nullableEnable)
         {
             SwaggerSchemaFilter = swaggerSchemaFilter;
-            BaseId = baseId;
+            Base = @base;
             Newtonsoft = newtonsoft;
             SystemTextJson = systemTextJson;
             TypeConverter = typeConverter;

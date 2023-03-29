@@ -1,10 +1,10 @@
+using Microsoft.CodeAnalysis;
+
 namespace Strongly;
 
-readonly record struct StronglyConfiguration(
-    StronglyType BackingType,
+readonly record struct StronglyConfiguration(StronglyType BackingType,
     StronglyConverter Converters,
-    StronglyImplementations Implementations
-)
+    StronglyImplementations Implementations, Location? Location = null)
 {
     /// <summary>
     /// Gets the default values for when a default attribute is not used.

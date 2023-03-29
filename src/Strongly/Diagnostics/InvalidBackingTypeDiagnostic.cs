@@ -11,10 +11,10 @@ static class InvalidBackingTypeDiagnostic
 
     internal const string Title = "Invalid backing type";
 
-    public static Diagnostic Create(Location location) =>
+    public static Diagnostic Create(Location? location) =>
         Diagnostic.Create(
             new DiagnosticDescriptor(
                 Id, Title, Message, category: Constants.Usage,
                 defaultSeverity: DiagnosticSeverity.Warning, isEnabledByDefault: true),
-            location);
+            location ?? Location.None);
 }
