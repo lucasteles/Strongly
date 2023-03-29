@@ -104,7 +104,7 @@ namespace Strongly.IntegrationTests
         public void CanTryParseSuccessfully()
         {
             var value = new BigInteger(2L);
-            var result = BigIntegerId.TryParse(value.ToString(), out BigIntegerId foo);
+            var result = BigIntegerId.TryParse(value.ToString(), out var foo);
             var bar = new BigIntegerId(value);
 
             Assert.True(result);

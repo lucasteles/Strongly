@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Strongly.IntegrationTests.Types
+﻿namespace Strongly.IntegrationTests.Types
 {
     [Strongly(backingType: StronglyType.Guid)]
     public partial struct GuidId1

@@ -113,7 +113,7 @@ namespace Strongly.IntegrationTests
         public void CanTryParseSuccessfully()
         {
             var value = NewId.NextGuid();
-            var result = SequentialGuidId1.TryParse(value.ToString(), out SequentialGuidId1 foo);
+            var result = SequentialGuidId1.TryParse(value.ToString(), out var foo);
             var bar = new SequentialGuidId1(value);
 
             Assert.True(result);

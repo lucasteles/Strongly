@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using MassTransit;
@@ -62,7 +61,6 @@ namespace Strongly.IntegrationTests
             var bar = GuidCombId2.New();
             var foo = GuidCombId1.New();
 
-            //Assert.NotEqual(bar, foo); // does not compile
             Assert.NotEqual((object)bar, (object)foo);
         }
 
@@ -103,7 +101,7 @@ namespace Strongly.IntegrationTests
         public void CanTryParseSuccessfully()
         {
             var value = NewId.NextGuid();
-            var result = GuidCombId1.TryParse(value.ToString(), out GuidCombId1 foo);
+            var result = GuidCombId1.TryParse(value.ToString(), out var foo);
             var bar = new GuidCombId1(value);
 
             Assert.True(result);

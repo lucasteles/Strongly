@@ -6,9 +6,9 @@ namespace Strongly
 {
     static class SourceGenerationHelper
     {
-        public static string CreateId(
-            string idNamespace,
-            string idName,
+        public static string CreateStrongValue(
+            string valueNamespace,
+            string valueName,
             ParentClass? parentClass,
             StronglyConverter converters,
             StronglyType backingType,
@@ -32,21 +32,22 @@ namespace Strongly
                     nameof(backingType)),
             };
 
-            return CreateId(idNamespace, idName, parentClass, converters, implementations,
+            return CreateStrongValue(valueNamespace, valueName, parentClass, converters,
+                implementations,
                 resources, sb);
         }
 
-        static string CreateId(
-            string idNamespace,
-            string idName,
+        static string CreateStrongValue(
+            string valueNamespace,
+            string valueName,
             ParentClass? parentClass,
             StronglyConverter converters,
             StronglyImplementations implementations,
             EmbeddedSources.ResourceCollection resources,
             StringBuilder? sb)
         {
-            if (string.IsNullOrEmpty(idName))
-                throw new ArgumentException("Value cannot be null or empty.", nameof(idName));
+            if (string.IsNullOrEmpty(valueName))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(valueName));
 
             if (converters == StronglyConverter.Default)
                 throw new ArgumentException(
@@ -58,7 +59,7 @@ namespace Strongly
                     "Cannot use default implementations - must provide concrete values or None",
                     nameof(implementations));
 
-            var hasNamespace = !string.IsNullOrEmpty(idNamespace);
+            var hasNamespace = !string.IsNullOrEmpty(valueNamespace);
 
             var useSchemaFilter = converters.IsSet(StronglyConverter.SwaggerSchemaFilter);
             var useTypeConverter = converters.IsSet(StronglyConverter.TypeConverter);
@@ -74,6 +75,8 @@ namespace Strongly
             var parentsCount = 0;
 
             sb ??= new StringBuilder();
+            sb.Append($"\n//{DateTime.UtcNow:o}").AppendLine();
+            
             sb.Append(resources.Header);
 
             if (resources.NullableEnable) sb.AppendLine("#nullable enable");
@@ -81,7 +84,7 @@ namespace Strongly
             if (hasNamespace)
                 sb
                     .Append("namespace ")
-                    .Append(idNamespace)
+                    .Append(valueNamespace)
                     .AppendLine(@"
 {");
 
@@ -117,12 +120,12 @@ namespace Strongly
             if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson);
             if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter);
 
-            sb.Replace("TYPENAME", idName);
+            sb.Replace("TYPENAME", valueName);
             sb.AppendLine(@"    }");
 
             for (var i = 0; i < parentsCount; i++) sb.AppendLine(@"    }");
 
-            if (hasNamespace) sb.Append('}').AppendLine();
+            if (hasNamespace) sb.Append('}');
 
             return sb.ToString();
         }

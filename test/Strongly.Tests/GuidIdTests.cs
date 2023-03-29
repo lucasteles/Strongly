@@ -101,7 +101,7 @@ namespace Strongly.IntegrationTests
         public void CanTryParseSuccessfully()
         {
             var value = Guid.NewGuid();
-            var result = GuidId1.TryParse(value.ToString(), out GuidId1 foo);
+            var result = GuidId1.TryParse(value.ToString(), out var foo);
             var bar = new GuidId1(value);
 
             Assert.True(result);

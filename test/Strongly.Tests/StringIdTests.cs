@@ -86,7 +86,7 @@ namespace Strongly.IntegrationTests
         public void CanTryParseSuccessfully()
         {
             var value = "123ABC";
-            var result = StringId.TryParse(value, out StringId foo);
+            var result = StringId.TryParse(value, out var foo);
             var bar = new StringId(value);
 
             Assert.True(result);

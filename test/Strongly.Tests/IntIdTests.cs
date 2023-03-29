@@ -92,7 +92,7 @@ namespace Strongly.IntegrationTests
         public void CanTryParseSuccessfully()
         {
             var value = 2;
-            var result = IntId.TryParse(value.ToString(), out IntId foo);
+            var result = IntId.TryParse(value.ToString(), out var foo);
             var bar = new IntId(value);
 
             Assert.True(result);

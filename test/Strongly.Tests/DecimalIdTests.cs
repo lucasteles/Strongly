@@ -91,7 +91,7 @@ namespace Strongly.IntegrationTests
         public void CanTryParseSuccessfully()
         {
             var value = 2.789M;
-            var result = DecimalId.TryParse(value.ToString(), out DecimalId foo);
+            var result = DecimalId.TryParse(value.ToString(), out var foo);
             var bar = new DecimalId(value);
 
             Assert.True(result);

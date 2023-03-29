@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,353 +12,296 @@ namespace Strongly;
 
 static class Parser
 {
-    public const string StronglyAttribute = "Strongly.StronglyAttribute";
-    public const string StronglyDefaultsAttribute = "Strongly.StronglyDefaultsAttribute";
+    const string StronglyAttribute = "Strongly.StronglyAttribute";
+    const string StronglyDefaultsAttribute = "Strongly.StronglyDefaultsAttribute";
 
     public static bool IsStructTargetForGeneration(SyntaxNode node)
-        => node is StructDeclarationSyntax m && m.AttributeLists.Count > 0;
+        => node is StructDeclarationSyntax {AttributeLists.Count: > 0} dec
+           && HasEligibleAttributes(dec.AttributeLists.SelectMany(c => c.Attributes));
 
     public static bool IsAttributeTargetForGeneration(SyntaxNode node)
-        => node is AttributeListSyntax attributeList
-           && attributeList.Target is not null
-           && attributeList.Target.Identifier.IsKind(SyntaxKind.AssemblyKeyword);
+        => node is AttributeListSyntax {Target.Identifier: var id} list
+           && id.IsKind(SyntaxKind.AssemblyKeyword)
+           && HasEligibleAttributes(list.Attributes);
 
-    public static StructDeclarationSyntax? GetStructSemanticTargetForGeneration(GeneratorSyntaxContext context)
-    {
-        // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
-        var structDeclarationSyntax = (StructDeclarationSyntax)context.Node;
-
-        // loop through all the attributes on the method
-        foreach (AttributeListSyntax attributeListSyntax in structDeclarationSyntax.AttributeLists)
+    static string? ExtractName(NameSyntax? name) =>
+        name switch
         {
-            foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-            {
-                if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
-                {
-                    // weird, we couldn't get the symbol, ignore it
-                    continue;
-                }
+            SimpleNameSyntax ins => ins.Identifier.Text,
+            QualifiedNameSyntax qns => qns.Right.Identifier.Text,
+            _ => null
+        };
 
-                INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-                string fullName = attributeContainingTypeSymbol.ToDisplayString();
+    static bool HasEligibleAttributes(IEnumerable<AttributeSyntax> attrs) =>
+        attrs.Any(x => ExtractName(x.Name)?.StartsWith("Strongly") == true);
 
-                // Is the attribute the [Strongly] attribute?
-                if (fullName == StronglyAttribute)
-                {
-                    // return the enum
-                    return structDeclarationSyntax;
-                }
-            }
-        }
 
-        // we didn't find the attribute we were looking for
-        return null;
-    }
-
-    public static AttributeSyntax? GetAssemblyAttributeSemanticTargetForGeneration(GeneratorSyntaxContext context)
+    public static ComparableSyntax<StructDeclarationSyntax>?
+        GetStructSemanticTargetForGeneration(GeneratorSyntaxContext context)
     {
-        // we know the node is a AttributeListSyntax thanks to IsSyntaxTargetForGeneration
-        var attributeListSyntax = (AttributeListSyntax)context.Node;
+        var structDeclarationSyntax = (StructDeclarationSyntax) context.Node;
 
-        // loop through all the attributes in the list
-        foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
+        foreach (var attributeListSyntax in structDeclarationSyntax.AttributeLists)
+        foreach (var attributeSyntax in attributeListSyntax.Attributes)
         {
-            if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
-            {
-                // weird, we couldn't get the symbol, ignore it
+            if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax)
+                    .Symbol is not IMethodSymbol attributeSymbol)
                 continue;
-            }
 
-            INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-            string fullName = attributeContainingTypeSymbol.ToDisplayString();
+            var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
+            var fullName = attributeContainingTypeSymbol.ToDisplayString();
 
-            // Is the attribute the [StronglyDefaultsAttribute] attribute?
-            if (fullName == StronglyDefaultsAttribute)
-            {
-                // return the attribute
-                return attributeSyntax;
-            }
+            if (fullName == StronglyAttribute)
+                return new ComparableSyntax<StructDeclarationSyntax>(
+                    fullName,
+                    structDeclarationSyntax);
         }
 
-        // we didn't find the attribute we were looking for
         return null;
     }
 
-    public static List<(string Name, string NameSpace, StronglyConfiguration Config, ParentClass? Parent)> GetTypesToGenerate(
-        Compilation compilation,
-        ImmutableArray<StructDeclarationSyntax> targets,
-        Action<Diagnostic> reportDiagnostic,
-        CancellationToken ct)
+    public static ComparableSyntax<AttributeSyntax>?
+        GetAssemblyAttributeSemanticTargetForGeneration(
+            GeneratorSyntaxContext context)
     {
-        var idsToGenerate = new List<(string Name, string NameSpace, StronglyConfiguration Config, ParentClass? Parent)>();
-        INamedTypeSymbol? idAttribute = compilation.GetTypeByMetadataName(StronglyAttribute);
-        if (idAttribute == null)
+        var attributeListSyntax = (AttributeListSyntax) context.Node;
+
+        foreach (var attributeSyntax in attributeListSyntax.Attributes)
         {
-            // nothing to do if this type isn't available
-            return idsToGenerate;
+            if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax)
+                    .Symbol is not IMethodSymbol attributeSymbol)
+                continue;
+
+            var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
+            var fullName = attributeContainingTypeSymbol.ToDisplayString();
+
+            if (fullName == StronglyDefaultsAttribute)
+                return new ComparableSyntax<AttributeSyntax>(fullName, attributeSyntax);
         }
 
-        foreach (StructDeclarationSyntax structDeclarationSyntax in targets)
+        return null;
+    }
+
+    public static
+        IReadOnlyCollection<(string Name, string NameSpace, StronglyConfiguration Config,
+            ParentClass? Parent)>
+        GetTypesToGenerate(
+            Compilation compilation,
+            ImmutableArray<ComparableSyntax<StructDeclarationSyntax>> targets,
+            Action<Diagnostic> reportDiagnostic,
+            CancellationToken ct)
+    {
+        var idsToGenerate =
+            new List<(
+                string Name,
+                string NameSpace,
+                StronglyConfiguration Config,
+                ParentClass? Parent)>();
+
+        var idAttribute = compilation.GetTypeByMetadataName(StronglyAttribute);
+
+        if (idAttribute is null) return idsToGenerate;
+
+        foreach (var structDeclaration in targets)
         {
-            // stop if we're asked to
+            var structDeclarationSyntax = structDeclaration.Syntax;
             ct.ThrowIfCancellationRequested();
 
-            SemanticModel semanticModel = compilation.GetSemanticModel(structDeclarationSyntax.SyntaxTree);
-            if (semanticModel.GetDeclaredSymbol(structDeclarationSyntax) is not INamedTypeSymbol structSymbol)
-            {
-                // something went wrong
+            var semanticModel =
+                compilation.GetSemanticModel(structDeclarationSyntax.SyntaxTree);
+            if (semanticModel.GetDeclaredSymbol(structDeclarationSyntax) is not
+                { } structSymbol)
                 continue;
-            }
 
             StronglyConfiguration? config = null;
             var hasMisconfiguredInput = false;
 
-            foreach (AttributeData attribute in structSymbol.GetAttributes())
+            foreach (var attribute in structSymbol.GetAttributes())
             {
                 if (!idAttribute.Equals(attribute.AttributeClass, SymbolEqualityComparer.Default))
-                {
                     continue;
-                }
 
-                StronglyType backingType = StronglyType.Default;
-                StronglyConverter converter = StronglyConverter.Default;
-                StronglyImplementations implementations = StronglyImplementations.Default;
+                var backingType = StronglyType.Default;
+                var converter = StronglyConverter.Default;
+                var implementations = StronglyImplementations.Default;
 
                 if (!attribute.ConstructorArguments.IsEmpty)
                 {
-                    // make sure we don't have any errors
-                    ImmutableArray<TypedConstant> args = attribute.ConstructorArguments;
+                    var args = attribute.ConstructorArguments;
 
-                    foreach (TypedConstant arg in args)
-                    {
+                    foreach (var arg in args)
                         if (arg.Kind == TypedConstantKind.Error)
-                        {
-                            // have an error, so don't try and do any generation
                             hasMisconfiguredInput = true;
-                        }
-                    }
 
                     switch (args.Length)
                     {
                         case 3:
-                            implementations = (StronglyImplementations)args[2].Value!;
+                            implementations = (StronglyImplementations) args[2].Value!;
                             goto case 2;
                         case 2:
-                            converter = (StronglyConverter)args[1].Value!;
+                            converter = (StronglyConverter) args[1].Value!;
                             goto case 1;
                         case 1:
-                            backingType = (StronglyType)args[0].Value!;
+                            backingType = (StronglyType) args[0].Value!;
                             break;
                     }
                 }
 
                 if (!attribute.NamedArguments.IsEmpty)
-                {
-                    foreach (KeyValuePair<string, TypedConstant> arg in attribute.NamedArguments)
+                    foreach (var arg in attribute.NamedArguments)
                     {
-                        TypedConstant typedConstant = arg.Value;
+                        var typedConstant = arg.Value;
                         if (typedConstant.Kind == TypedConstantKind.Error)
-                        {
                             hasMisconfiguredInput = true;
-                        }
                         else
-                        {
                             switch (arg.Key)
                             {
                                 case "backingType":
-                                    backingType = (StronglyType)typedConstant.Value!;
+                                    backingType = (StronglyType) typedConstant.Value!;
                                     break;
                                 case "converters":
-                                    converter = (StronglyConverter)typedConstant.Value!;
+                                    converter = (StronglyConverter) typedConstant.Value!;
                                     break;
                                 case "implementations":
-                                    implementations = (StronglyImplementations)typedConstant.Value!;
+                                    implementations =
+                                        (StronglyImplementations) typedConstant.Value!;
                                     break;
                             }
-                        }
                     }
 
-
-                }
-
                 if (hasMisconfiguredInput)
-                {
-                    // skip further generator execution and let compiler generate the errors
                     break;
-                }
 
                 if (!converter.IsValidFlags())
-                {
                     reportDiagnostic(InvalidConverterDiagnostic.Create(structDeclarationSyntax));
-                }
 
                 if (!Enum.IsDefined(typeof(StronglyType), backingType))
-                {
                     reportDiagnostic(InvalidBackingTypeDiagnostic.Create(structDeclarationSyntax));
-                }
 
                 if (!implementations.IsValidFlags())
-                {
-                    reportDiagnostic(InvalidImplementationsDiagnostic.Create(structDeclarationSyntax));
-                }
+                    reportDiagnostic(
+                        InvalidImplementationsDiagnostic.Create(structDeclarationSyntax));
 
                 config = new StronglyConfiguration(backingType, converter, implementations);
                 break;
             }
 
             if (config is null || hasMisconfiguredInput)
-            {
-                continue; // name clash, or error
-            }
+                continue;
 
             var hasPartialModifier = false;
             foreach (var modifier in structDeclarationSyntax.Modifiers)
-            {
                 if (modifier.IsKind(SyntaxKind.PartialKeyword))
                 {
                     hasPartialModifier = true;
                     break;
                 }
-            }
 
             if (!hasPartialModifier)
-            {
                 reportDiagnostic(NotPartialDiagnostic.Create(structDeclarationSyntax));
-            }
 
-            string nameSpace = GetNameSpace(structDeclarationSyntax);
+            var nameSpace = GetNameSpace(structDeclarationSyntax);
             var parentClass = GetParentClasses(structDeclarationSyntax);
             var name = structSymbol.Name;
 
-            idsToGenerate.Add((Name: name, NameSpace: nameSpace, Config: config.Value, Parent: parentClass));
+            idsToGenerate.Add((Name: name, NameSpace: nameSpace, Config: config.Value,
+                Parent: parentClass));
         }
 
         return idsToGenerate;
     }
 
     public static StronglyConfiguration? GetDefaults(
-        ImmutableArray<AttributeSyntax> defaults,
+        ImmutableArray<ComparableSyntax<AttributeSyntax>> defaults,
         Compilation compilation,
         Action<Diagnostic> reportDiagnostic)
     {
         if (defaults.IsDefaultOrEmpty)
-        {
-            // No global defaults
             return null;
-        }
 
         var assemblyAttributes = compilation.Assembly.GetAttributes();
         if (assemblyAttributes.IsDefaultOrEmpty)
-        {
             return null;
-        }
 
-        INamedTypeSymbol? defaultsAttribute = compilation.GetTypeByMetadataName(StronglyDefaultsAttribute);
+        var defaultsAttribute = compilation.GetTypeByMetadataName(StronglyDefaultsAttribute);
         if (defaultsAttribute is null)
-        {
-            // The attribute isn't part of the compilation for some reason...
             return null;
-        }
 
-        foreach (AttributeData attribute in assemblyAttributes)
+        foreach (var attribute in assemblyAttributes)
         {
             if (!defaultsAttribute.Equals(attribute.AttributeClass, SymbolEqualityComparer.Default))
-            {
                 continue;
-            }
 
-            StronglyType backingType = StronglyType.Default;
-            StronglyConverter converter = StronglyConverter.Default;
-            StronglyImplementations implementations = StronglyImplementations.Default;
-            bool hasMisconfiguredInput = false;
+            var backingType = StronglyType.Default;
+            var converter = StronglyConverter.Default;
+            var implementations = StronglyImplementations.Default;
+            var hasMisconfiguredInput = false;
 
             if (!attribute.ConstructorArguments.IsEmpty)
             {
-                // make sure we don't have any errors
-                ImmutableArray<TypedConstant> args = attribute.ConstructorArguments;
+                var args = attribute.ConstructorArguments;
 
-                foreach (TypedConstant arg in args)
-                {
+                foreach (var arg in args)
                     if (arg.Kind == TypedConstantKind.Error)
-                    {
-                        // have an error, so don't try and do any generation
                         hasMisconfiguredInput = true;
-                    }
-                }
 
                 switch (args.Length)
                 {
                     case 3:
-                        implementations = (StronglyImplementations)args[2].Value!;
+                        implementations = (StronglyImplementations) args[2].Value!;
                         goto case 2;
                     case 2:
-                        converter = (StronglyConverter)args[1].Value!;
+                        converter = (StronglyConverter) args[1].Value!;
                         goto case 1;
                     case 1:
-                        backingType = (StronglyType)args[0].Value!;
+                        backingType = (StronglyType) args[0].Value!;
                         break;
                 }
             }
 
             if (!attribute.NamedArguments.IsEmpty)
-            {
-                foreach (KeyValuePair<string, TypedConstant> arg in attribute.NamedArguments)
+                foreach (var arg in attribute.NamedArguments)
                 {
-                    TypedConstant typedConstant = arg.Value;
+                    var typedConstant = arg.Value;
                     if (typedConstant.Kind == TypedConstantKind.Error)
-                    {
                         hasMisconfiguredInput = true;
-                    }
                     else
-                    {
                         switch (arg.Key)
                         {
                             case "backingType":
-                                backingType = (StronglyType)typedConstant.Value!;
+                                backingType = (StronglyType) typedConstant.Value!;
                                 break;
                             case "converters":
-                                converter = (StronglyConverter)typedConstant.Value!;
+                                converter = (StronglyConverter) typedConstant.Value!;
                                 break;
                             case "implementations":
-                                implementations = (StronglyImplementations)typedConstant.Value!;
+                                implementations = (StronglyImplementations) typedConstant.Value!;
                                 break;
                         }
-                    }
                 }
-            }
 
             if (hasMisconfiguredInput)
-            {
-                // skip further generator execution and let compiler generate the errors
                 break;
-            }
 
             SyntaxNode? syntax = null;
             if (!converter.IsValidFlags())
             {
                 syntax = attribute.ApplicationSyntaxReference?.GetSyntax();
-                if (syntax is not null)
-                {
-                    reportDiagnostic(InvalidConverterDiagnostic.Create(syntax));
-                }
+                if (syntax is not null) reportDiagnostic(InvalidConverterDiagnostic.Create(syntax));
             }
 
             if (!Enum.IsDefined(typeof(StronglyType), backingType))
             {
                 syntax ??= attribute.ApplicationSyntaxReference?.GetSyntax();
                 if (syntax is not null)
-                {
                     reportDiagnostic(InvalidBackingTypeDiagnostic.Create(syntax));
-                }
             }
 
             if (!implementations.IsValidFlags())
             {
                 syntax ??= attribute.ApplicationSyntaxReference?.GetSyntax();
                 if (syntax is not null)
-                {
                     reportDiagnostic(InvalidImplementationsDiagnostic.Create(syntax));
-                }
             }
 
             return new StronglyConfiguration(backingType, converter, implementations);
@@ -366,42 +310,38 @@ static class Parser
         return null;
     }
 
-    static string GetNameSpace(StructDeclarationSyntax structSymbol)
+    static string GetNameSpace(SyntaxNode structSymbol)
     {
         // determine the namespace the struct is declared in, if any
-        SyntaxNode? potentialNamespaceParent = structSymbol.Parent;
-        while (potentialNamespaceParent != null &&
-               potentialNamespaceParent is not NamespaceDeclarationSyntax
-               && potentialNamespaceParent is not FileScopedNamespaceDeclarationSyntax)
-        {
+        var potentialNamespaceParent = structSymbol.Parent;
+        while (potentialNamespaceParent is not (
+               null
+               or NamespaceDeclarationSyntax
+               or FileScopedNamespaceDeclarationSyntax))
             potentialNamespaceParent = potentialNamespaceParent.Parent;
-        }
 
-        if (potentialNamespaceParent is BaseNamespaceDeclarationSyntax namespaceParent)
+        if (potentialNamespaceParent is not BaseNamespaceDeclarationSyntax namespaceParent)
+            return string.Empty;
+
+        var nameSpace = namespaceParent.Name.ToString();
+        while (true)
         {
-            string nameSpace = namespaceParent.Name.ToString();
-            while (true)
-            {
-                if (namespaceParent.Parent is not NamespaceDeclarationSyntax namespaceParentParent)
-                {
-                    break;
-                }
+            if (namespaceParent.Parent is not NamespaceDeclarationSyntax namespaceParentParent)
+                break;
 
-                namespaceParent = namespaceParentParent;
-                nameSpace = $"{namespaceParent.Name}.{nameSpace}";
-            }
-
-            return nameSpace;
+            namespaceParent = namespaceParentParent;
+            nameSpace = $"{namespaceParent.Name}.{nameSpace}";
         }
-        return string.Empty;
+
+        return nameSpace;
     }
 
-    static ParentClass? GetParentClasses(StructDeclarationSyntax structSymbol)
+    static ParentClass? GetParentClasses(SyntaxNode structSymbol)
     {
-        TypeDeclarationSyntax? parentIdClass = structSymbol.Parent as TypeDeclarationSyntax;
+        var parentIdClass = structSymbol.Parent as TypeDeclarationSyntax;
         ParentClass? parentClass = null;
 
-        while (parentIdClass != null && IsAllowedKind(parentIdClass.Kind()))
+        while (parentIdClass is not null && IsAllowedKind(parentIdClass.Kind()))
         {
             parentClass = new ParentClass(
                 keyword: parentIdClass.Keyword.ValueText,
@@ -409,14 +349,32 @@ static class Parser
                 constraints: parentIdClass.ConstraintClauses.ToString(),
                 child: parentClass);
 
-            parentIdClass = (parentIdClass.Parent as TypeDeclarationSyntax);
+            parentIdClass = parentIdClass.Parent as TypeDeclarationSyntax;
         }
 
         return parentClass;
 
-        static bool IsAllowedKind(SyntaxKind kind) =>
-            kind == SyntaxKind.ClassDeclaration ||
-            kind == SyntaxKind.StructDeclaration ||
-            kind == SyntaxKind.RecordDeclaration;
+        static bool IsAllowedKind(SyntaxKind kind) => kind
+            is SyntaxKind.ClassDeclaration
+            or SyntaxKind.StructDeclaration
+            or SyntaxKind.RecordDeclaration;
     }
+}
+
+readonly struct ComparableSyntax<T> : IEquatable<ComparableSyntax<T>>
+{
+    public string Name { get; }
+    public T Syntax { get; }
+
+    public ComparableSyntax(string name, T syntax)
+    {
+        Name = name;
+        Syntax = syntax;
+    }
+
+    public override bool Equals(object? obj) =>
+        obj is ComparableSyntax<T> customObject && Equals(customObject);
+
+    public bool Equals(ComparableSyntax<T> other) => Name == other.Name;
+    public override int GetHashCode() => Name.GetHashCode();
 }
