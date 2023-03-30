@@ -60,7 +60,7 @@ public class GuidIdTests
         var foo = GuidId1.New();
 
         //Assert.NotEqual(bar, foo); // does not compile
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class GuidIdTests
         var bar = new GuidId2();
 
         //Assert.NotEqual(bar, foo); // does not compile
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public class GuidIdTests
     [Fact]
     public void CanSerializeToNullableInt_WithNewtonsoftJsonProvider()
     {
-        var entity = new EntityWithNullableId { Id = null };
+        var entity = new EntityWithNullableId {Id = null};
 
         var json = NewtonsoftJsonSerializer.SerializeObject(entity);
         var deserialize =
@@ -237,7 +237,7 @@ public class GuidIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity { Id = EfCoreGuidId.New() });
+                new TestEntity {Id = EfCoreGuidId.New()});
             context.SaveChanges();
         }
 
@@ -329,7 +329,7 @@ public class GuidIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity { Id = EfCoreGuidId.New() });
+                new TestEntity {Id = EfCoreGuidId.New()});
             context.SaveChanges();
         }
 
@@ -424,5 +424,15 @@ public class GuidIdTests
     public class EntityWithNullableId
     {
         public NewtonsoftJsonGuidId? Id { get; set; }
+    }
+
+    [Fact]
+    public void RecordSameValuesAreEqual()
+    {
+        var id = Guid.NewGuid();
+        var foo1 = new RecordGuidId1(id);
+        var foo2 = new RecordGuidId1(id);
+
+        Assert.Equal(foo1, foo2);
     }
 }

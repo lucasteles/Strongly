@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Strongly;
@@ -99,11 +100,15 @@ static class SourceGenerationHelper
         if (useTypeConverter) sb.AppendLine(EmbeddedSources.TypeConverterAttributeSource);
         if (useSchemaFilter) sb.AppendLine(EmbeddedSources.SwaggerSchemaFilterAttributeSource);
 
-        // sb.Append(ctx.IsRecord
-        //     ? resources.Base.Replace("struct TYPENAME", "record struct TYPENAME")
-        //     : resources.Base);
-
-        sb.Append(resources.Base);
+        if (ctx.IsRecord)
+        {
+            var ctor = resources.Base.Split('\n')
+                .First(x => x.Trim().StartsWith("public TYPENAME("))
+                .Trim().Split('(', ')')[1];
+            sb.Append($"readonly partial record struct TYPENAME({ctor}): INTERFACES {{ \n ");
+        }
+        else
+            sb.Append(resources.Base);
 
         ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable);
 

@@ -69,3 +69,6 @@ public partial struct EquatableGuidId
 public partial struct ComparableGuidId
 {
 }
+
+[Strongly(StronglyType.Guid)]
+public partial record struct RecordGuidId1;
