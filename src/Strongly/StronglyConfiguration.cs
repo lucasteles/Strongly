@@ -14,8 +14,9 @@ readonly record struct StronglyConfiguration(StronglyType BackingType,
     public static readonly StronglyConfiguration Defaults = new(
         BackingType: StronglyType.Guid,
         Converters: StronglyConverter.TypeConverter | StronglyConverter.SystemTextJson,
-        Implementations: StronglyImplementations.IEquatable |
-                         StronglyImplementations.IComparable
+        Implementations: StronglyImplementations.Parsable
+                         | StronglyImplementations.IEquatable
+                         | StronglyImplementations.IComparable
     );
 
     /// <summary>
@@ -47,12 +48,15 @@ readonly record struct StronglyConfiguration(StronglyType BackingType,
             (attributeValues.Implementations, globalValues?.Implementations) switch
             {
                 (StronglyImplementations.Default, null) => Defaults.Implementations,
-                (StronglyImplementations.Default, StronglyImplementations.Default) => Defaults
-                    .Implementations,
+                (StronglyImplementations.Default, StronglyImplementations.Default) =>
+                    Defaults.Implementations,
                 (StronglyImplementations.Default, var globalDefault) => globalDefault.Value,
                 var (specificValue, _) => specificValue
             };
 
-        return new StronglyConfiguration(backingType, converter, implementations);
+        return new StronglyConfiguration(
+            backingType,
+            converter,
+            implementations);
     }
 }

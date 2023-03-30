@@ -21,15 +21,4 @@
         public override string ToString() => Value.ToString();
         public static bool operator ==(TYPENAME a, TYPENAME b) => a.Equals(b);
         public static bool operator !=(TYPENAME a, TYPENAME b) => !(a == b);
-
-        public static TYPENAME Parse(string value) => new TYPENAME(decimal.Parse(value));
-        public static bool TryParse(string value, out TYPENAME result)
-        {
-            if (decimal.TryParse(value, out decimal parseResult))
-            {
-                result = new TYPENAME(parseResult);
-                return true;
-            }
-            result = default;
-            return false;
-        }
+        

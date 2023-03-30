@@ -1,7 +1,7 @@
 ﻿namespace Strongly.IntegrationTests.Types;
 
 [Strongly(backingType: StronglyType.Decimal)]
-partial struct DecimalId
+public partial struct DecimalId
 {
 }
 

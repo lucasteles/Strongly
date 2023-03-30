@@ -47,16 +47,17 @@ static class SourceGenerationHelper
                 "Cannot use default converter - must provide concrete values or None",
                 nameof(ctx.Config.Converters));
 
-
         var useSchemaFilter = converters.IsSet(StronglyConverter.SwaggerSchemaFilter);
         var useTypeConverter = converters.IsSet(StronglyConverter.TypeConverter);
         var useNewtonsoftJson = converters.IsSet(StronglyConverter.NewtonsoftJson);
         var useSystemTextJson = converters.IsSet(StronglyConverter.SystemTextJson);
-        var useEfValueConverter =
-            converters.IsSet(StronglyConverter.EfValueConverter);
+        var useEfValueConverter = converters
+            .IsSet(StronglyConverter.EfValueConverter);
         var useDapperTypeHandler = converters.IsSet(StronglyConverter.DapperTypeHandler);
 
         var implementations = ctx.Config.Implementations;
+        var useParsable = implementations.IsSet(StronglyImplementations.Parsable);
+        const bool useIParsable = false;
         var useIEquatable =
             !ctx.IsRecord && implementations.IsSet(StronglyImplementations.IEquatable);
         var useIComparable =
@@ -65,8 +66,6 @@ static class SourceGenerationHelper
         var parentsCount = 0;
 
         sb ??= new StringBuilder();
-        sb.Append($"\n//{DateTime.UtcNow:o}").AppendLine();
-
         sb.Append(resources.Header);
 
         if (resources.NullableEnable) sb.AppendLine("#nullable enable");
@@ -100,14 +99,16 @@ static class SourceGenerationHelper
         if (useTypeConverter) sb.AppendLine(EmbeddedSources.TypeConverterAttributeSource);
         if (useSchemaFilter) sb.AppendLine(EmbeddedSources.SwaggerSchemaFilterAttributeSource);
 
-        sb.Append(ctx.IsRecord
-            ? resources.Base.Replace("struct TYPENAME", "record struct TYPENAME")
-            : resources.Base);
+        // sb.Append(ctx.IsRecord
+        //     ? resources.Base.Replace("struct TYPENAME", "record struct TYPENAME")
+        //     : resources.Base);
 
-        ReplaceInterfaces(sb, useIEquatable, useIComparable);
+        sb.Append(resources.Base);
 
-        // IEquatable is already implemented whether or not the interface is implemented
+        ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable);
+
         if (useIComparable) sb.AppendLine(resources.Comparable);
+        if (useParsable) sb.AppendLine(resources.Parsable);
         if (useEfValueConverter) sb.AppendLine(resources.EfValueConverter);
         if (useDapperTypeHandler) sb.AppendLine(resources.DapperTypeHandler);
         if (useTypeConverter) sb.AppendLine(resources.TypeConverter);
@@ -128,11 +129,14 @@ static class SourceGenerationHelper
 
     static void ReplaceInterfaces(StringBuilder sb,
         bool useIEquatable,
-        bool useIComparable)
+        bool useIComparable,
+        bool useIParseable
+    )
     {
         var interfaces = new List<string>();
         if (useIComparable) interfaces.Add("System.IComparable<TYPENAME>");
         if (useIEquatable) interfaces.Add("System.IEquatable<TYPENAME>");
+        if (useIParseable) interfaces.Add("System.IParsable<TYPENAME>");
 
         if (interfaces.Count > 0)
             sb.Replace("INTERFACES", string.Join(", ", interfaces));

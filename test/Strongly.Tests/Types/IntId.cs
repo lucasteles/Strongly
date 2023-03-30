@@ -1,7 +1,7 @@
 ﻿namespace Strongly.IntegrationTests.Types;
 
 [Strongly(backingType: StronglyType.Int)]
-partial struct IntId
+public partial struct IntId
 {
 }
 

@@ -2,7 +2,7 @@
 
 [assembly:
     StronglyDefaults(converters: StronglyConverter.None,
-        implementations: StronglyImplementations.None)]
+        implementations: StronglyImplementations.Parsable)]
 
 namespace Strongly.IntegrationTests.Types;
 

@@ -29,10 +29,3 @@
     public override string? ToString() => Value;
     public static bool operator ==(TYPENAME a, TYPENAME b) => a.Equals(b);
     public static bool operator !=(TYPENAME a, TYPENAME b) => !(a == b);
-
-    public static TYPENAME Parse(string? value) => new TYPENAME(value);
-    public static bool TryParse(string? value, out TYPENAME result)
-    {
-        result = new TYPENAME(value?.Trim());
-        return true;
-    }

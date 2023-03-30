@@ -22,14 +22,3 @@
     public static bool operator ==(TYPENAME a, TYPENAME b) => a.Equals(b);
     public static bool operator !=(TYPENAME a, TYPENAME b) => !(a == b);
 
-    public static TYPENAME Parse(string value) => new TYPENAME(long.Parse(value));
-    public static bool TryParse(string value, out TYPENAME result)
-    {
-        if (long.TryParse(value, out long parseResult))
-        {
-            result = new TYPENAME(parseResult);
-            return true;
-        }
-        result = default;
-        return false;
-    }

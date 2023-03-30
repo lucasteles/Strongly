@@ -22,18 +22,3 @@
     public override string ToString() => Value.ToString();
     public static bool operator ==(TYPENAME a, TYPENAME b) => a.Equals(b);
     public static bool operator !=(TYPENAME a, TYPENAME b) => !(a == b);
-
-    public static TYPENAME Parse(string value) => new TYPENAME(new MassTransit.NewId(in value));
-    public static bool TryParse(string value, out TYPENAME result)
-    {
-        try
-        {
-            result = new TYPENAME(new MassTransit.NewId(in value));
-            return true;
-        }
-        catch
-        {
-            result = default;
-            return false;
-        }
-    }

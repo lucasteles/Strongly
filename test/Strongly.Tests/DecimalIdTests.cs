@@ -60,7 +60,7 @@ public class DecimalIdTests
         var bar = GuidId2.New();
         var foo = new DecimalId(23L);
 
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class DecimalIdTests
     [Fact]
     public void CanSerializeToNullableInt_WithNewtonsoftJsonProvider()
     {
-        var entity = new EntityWithNullableId { Id = null };
+        var entity = new EntityWithNullableId {Id = null};
 
         var json = NewtonsoftJsonSerializer.SerializeObject(entity);
         var deserialize =
@@ -224,7 +224,7 @@ public class DecimalIdTests
             .UseSqlite(connection)
             .Options;
 
-        var original = new TestEntity { Id = new EfCoreDecimalId(123) };
+        var original = new TestEntity {Id = new EfCoreDecimalId(123)};
         using (var context = new TestDbContext(options))
         {
             context.Database.EnsureCreated();
@@ -332,7 +332,7 @@ public class DecimalIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity { Id = new EfCoreDecimalId(123) });
+                new TestEntity {Id = new EfCoreDecimalId(123)});
             context.SaveChanges();
         }
 

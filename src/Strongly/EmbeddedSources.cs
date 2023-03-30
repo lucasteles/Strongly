@@ -37,6 +37,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_DapperTypeHandler.cs"),
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_IComparable.cs"),
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource("Strongly.Templates.Guid.Guid_Parsable.cs"),
         false
     );
 
@@ -50,6 +51,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_DapperTypeHandler.cs"),
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_IComparable.cs"),
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource("Strongly.Templates.Guid.Guid_Parsable.cs"),
         false
     );
 
@@ -63,6 +65,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_DapperTypeHandler.cs"),
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_IComparable.cs"),
         LoadEmbeddedResource("Strongly.Templates.Guid.Guid_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource("Strongly.Templates.Guid.Guid_Parsable.cs"),
         false
     );
 
@@ -76,6 +79,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.Int.Int_DapperTypeHandler.cs"),
         LoadEmbeddedResource("Strongly.Templates.Int.Int_IComparable.cs"),
         LoadEmbeddedResource("Strongly.Templates.Int.Int_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource("Strongly.Templates.Int.Int_Parsable.cs"),
         false
     );
 
@@ -89,6 +93,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.Long.Long_DapperTypeHandler.cs"),
         LoadEmbeddedResource("Strongly.Templates.Long.Long_IComparable.cs"),
         LoadEmbeddedResource("Strongly.Templates.Long.Long_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource("Strongly.Templates.Long.Long_Parsable.cs"),
         false
     );
 
@@ -108,6 +113,8 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.BigInteger.BigInteger_IComparable.cs"),
         LoadEmbeddedResource(
             "Strongly.Templates.BigInteger.BigInteger_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource(
+            "Strongly.Templates.BigInteger.BigInteger_Parsable.cs"),
         false
     );
 
@@ -125,6 +132,8 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.Decimal.Decimal_IComparable.cs"),
         LoadEmbeddedResource(
             "Strongly.Templates.Decimal.Decimal_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource(
+            "Strongly.Templates.Decimal.Decimal_Parsable.cs"),
         false
     );
 
@@ -141,6 +150,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.String.String_DapperTypeHandler.cs"),
         LoadEmbeddedResource("Strongly.Templates.String.String_IComparable.cs"),
         LoadEmbeddedResource("Strongly.Templates.String.String_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource("Strongly.Templates.String.String_Parsable.cs"),
         false
     );
 
@@ -162,6 +172,8 @@ static class EmbeddedSources
             "Strongly.Templates.NullableString.NullableString_IComparable.cs"),
         LoadEmbeddedResource(
             "Strongly.Templates.NullableString.NullableString_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource(
+            "Strongly.Templates.NullableString.NullableString_Parsable.cs"),
         true
     );
 
@@ -177,6 +189,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("Strongly.Templates.NewId.NewId_DapperTypeHandler.cs"),
         LoadEmbeddedResource("Strongly.Templates.NewId.NewId_IComparable.cs"),
         LoadEmbeddedResource("Strongly.Templates.NewId.NewId_SwaggerSchemaFilter.cs"),
+        LoadEmbeddedResource("Strongly.Templates.NewId.NewId_Parsable.cs"),
         false
     );
 
@@ -218,6 +231,7 @@ static class EmbeddedSources
         public string TypeConverter { get; }
         public string EfValueConverter { get; }
         public string DapperTypeHandler { get; }
+        public string Parsable { get; }
         public string Comparable { get; }
 
         public ResourceCollection(
@@ -230,6 +244,7 @@ static class EmbeddedSources
             string dapperTypeHandler,
             string comparable,
             string swaggerSchemaFilter,
+            string parsable,
             bool nullableEnable)
         {
             SwaggerSchemaFilter = swaggerSchemaFilter;
@@ -242,6 +257,7 @@ static class EmbeddedSources
             Comparable = comparable;
             NullableEnable = nullableEnable;
             Header = header;
+            Parsable = parsable;
         }
     }
 
