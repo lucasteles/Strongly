@@ -1,89 +1,108 @@
-using System.Collections.Generic;
+using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Strongly.Diagnostics;
 
-namespace Strongly
+namespace Strongly;
+
+/// <inheritdoc />
+[Generator(LanguageNames.CSharp)]
+public class StronglyGenerator : IIncrementalGenerator
 {
     /// <inheritdoc />
-    [Generator]
-    public class StronglyGenerator : IIncrementalGenerator
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        /// <inheritdoc />
-        public void Initialize(IncrementalGeneratorInitializationContext context)
+        // Register the attribute and enum sources
+        context.RegisterPostInitializationOutput(i =>
         {
-            // Register the attribute and enum sources
-            context.RegisterPostInitializationOutput(i =>
-            {
-                i.AddSource("StronglyAttribute.g.cs", EmbeddedSources.StronglyAttributeSource);
-                i.AddSource("StronglyDefaultsAttribute.g.cs", EmbeddedSources.StronglyDefaultsAttributeSource);
-                i.AddSource("StronglyType.g.cs", EmbeddedSources.StronglyBackingTypeSource);
-                i.AddSource("StronglyConverter.g.cs", EmbeddedSources.StronglyConverterSource);
-                i.AddSource("StronglyImplementations.g.cs", EmbeddedSources.StronglyImplementationsSource);
-            });
+            i.AddSource("StronglyAttribute.g.cs",
+                EmbeddedSources.StronglyAttributeSource);
+            i.AddSource("StronglyDefaultsAttribute.g.cs",
+                EmbeddedSources.StronglyDefaultsAttributeSource);
+            i.AddSource("StronglyType.g.cs",
+                EmbeddedSources.StronglyBackingTypeSource);
+            i.AddSource("StronglyConverter.g.cs",
+                EmbeddedSources.StronglyConverterSource);
+            i.AddSource("StronglyImplementations.g.cs",
+                EmbeddedSources.StronglyImplementationsSource);
+        });
 
-            IncrementalValuesProvider<StructDeclarationSyntax> structDeclarations = context.SyntaxProvider
+        var defaultAttributesDeclarations = context
+            .SyntaxProvider
+            .CreateSyntaxProvider(
+                static (s, _) => Parser.IsAttributeTargetForGeneration(s),
+                static (ctx, _) => Parser.GetAssemblyAttributeSemanticTargetForGeneration(ctx))
+            .Where(x => x is not null)
+            .Combine(context.CompilationProvider)
+            .Select((arg, ct) => Parser.GetDefaults(arg.Right, ct))
+            .Collect();
+
+        var structDeclarations =
+            context
+                .SyntaxProvider
                 .CreateSyntaxProvider(
-                    predicate: static (s, _) => Parser.IsStructTargetForGeneration(s),
-                    transform: static (ctx, _) => Parser.GetStructSemanticTargetForGeneration(ctx))
-                .Where(static m => m is not null)!;
-
-            IncrementalValuesProvider<AttributeSyntax> defaultAttributesDeclarations = context.SyntaxProvider
-                .CreateSyntaxProvider(
-                    predicate: static (s, _) => Parser.IsAttributeTargetForGeneration(s),
-                    transform: static (ctx, _) => Parser.GetAssemblyAttributeSemanticTargetForGeneration(ctx))
-                .Where(static m => m is not null)!;
-
-            IncrementalValueProvider<(ImmutableArray<StructDeclarationSyntax>, ImmutableArray<AttributeSyntax>)> targetsAndDefaultAttributes
-                = structDeclarations.Collect().Combine(defaultAttributesDeclarations.Collect());
-
-            IncrementalValueProvider<(Compilation Left, (ImmutableArray<StructDeclarationSyntax>, ImmutableArray<AttributeSyntax>) Right)> compilationAndValues
-                = context.CompilationProvider.Combine(targetsAndDefaultAttributes);
-
-            context.RegisterSourceOutput(compilationAndValues,
-                static (spc, source) => Execute(source.Item1, source.Item2.Item1, source.Item2.Item2, spc));
-        }
-
-        static void Execute(
-            Compilation compilation,
-            ImmutableArray<StructDeclarationSyntax> structs,
-            ImmutableArray<AttributeSyntax> defaults,
-            SourceProductionContext context)
-        {
-            if (structs.IsDefaultOrEmpty)
-            {
-                // nothing to do yet
-                return;
-            }
-
-            List<(string Name, string NameSpace, StronglyConfiguration Config, ParentClass? Parent)> idsToGenerate =
-                Parser.GetTypesToGenerate(compilation, structs, context.ReportDiagnostic, context.CancellationToken);
-
-            if (idsToGenerate.Count > 0)
-            {
-                StronglyConfiguration? globalDefaults = Parser.GetDefaults(defaults, compilation, context.ReportDiagnostic);
-                StringBuilder sb = new StringBuilder();
-                foreach (var idToGenerate in idsToGenerate)
+                    static (s, _) => Parser.IsStructTargetForGeneration(s),
+                    static (ctx, _) => (
+                        Target: Parser.GetStructSemanticTargetForGeneration(ctx),
+                        ctx.SemanticModel)
+                )
+                .Where(static m => m.Target is not null)
+                .Combine(defaultAttributesDeclarations)
+                .Select(static (arg, ctx) =>
                 {
-                    sb.Clear();
-                    var values = StronglyConfiguration.Combine(idToGenerate.Config, globalDefaults);
-                    var result = SourceGenerationHelper.CreateId(
-                        idToGenerate.NameSpace,
-                        idToGenerate.Name,
-                        idToGenerate.Parent,
-                        values.Converters,
-                        values.BackingType,
-                        values.Implementations,
-                        sb);
-                    var fileName = SourceGenerationHelper.CreateSourceName(
-                        idToGenerate.NameSpace,
-                        idToGenerate.Parent,
-                        idToGenerate.Name);
-                    context.AddSource(fileName, SourceText.From(result, Encoding.UTF8));
-                }
-            }
+                    var ((target, semanticModel), globalDefaults) = arg;
+                    var context = Parser.GetGenerationContext(semanticModel, target, ctx);
+                    if (context is null) return null;
+                    return context with
+                    {
+                        Config = StronglyConfiguration.Combine(context.Config,
+                            globalDefaults.Single())
+                    };
+                })
+                .Where(static m => m is not null)
+                .Select(static (arg, _) => arg!)
+                .Collect();
+
+        context.RegisterSourceOutput(structDeclarations, static (spc, source) =>
+            Execute(source, spc));
+    }
+
+    static void Execute(
+        ImmutableArray<StronglyContext> valuesToGenerate,
+        SourceProductionContext context)
+    {
+        if (valuesToGenerate.IsDefaultOrEmpty) return;
+        var sb = new StringBuilder();
+        foreach (var item in valuesToGenerate)
+        {
+            Diagnostic(context, item.Config);
+
+            sb.Clear();
+            var result = SourceGenerationHelper.CreateStrongValue(item, sb);
+            var fileName = SourceGenerationHelper.CreateSourceName(
+                item.NameSpace,
+                item.Parent,
+                item.Name);
+
+            context.AddSource(fileName, SourceText.From(result, Encoding.UTF8));
         }
+    }
+
+    static void Diagnostic(SourceProductionContext context, StronglyConfiguration config)
+    {
+        if (!config.Converters.IsValidFlags())
+            context.ReportDiagnostic(InvalidConverterDiagnostic
+                .Create(config.Location));
+
+        if (!Enum.IsDefined(typeof(StronglyType), config.BackingType))
+            context.ReportDiagnostic(InvalidBackingTypeDiagnostic
+                .Create(config.Location));
+
+        if (!config.Implementations.IsValidFlags())
+            context.ReportDiagnostic(InvalidImplementationsDiagnostic
+                .Create(config.Location));
     }
 }

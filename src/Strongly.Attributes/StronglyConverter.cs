@@ -8,7 +8,6 @@ namespace Strongly
     [Flags]
     public enum StronglyConverter
     {
-        // Used with HasFlag, so needs to be 1, 2, 4 etc
 
         /// <summary>
         /// Don't create any converters for the strongly typed ID

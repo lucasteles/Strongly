@@ -20,15 +20,4 @@
     public override string ToString() => Value.ToString(System.Globalization.NumberFormatInfo.InvariantInfo);
     public static bool operator ==(TYPENAME a, TYPENAME b) => a.Equals(b);
     public static bool operator !=(TYPENAME a, TYPENAME b) => !(a == b);
-
-    public static TYPENAME Parse(string value) => new TYPENAME(System.Numerics.BigInteger.Parse(value));
-    public static bool TryParse(string value, out TYPENAME result)
-    {
-        if (System.Numerics.BigInteger.TryParse(value, out System.Numerics.BigInteger parseResult))
-        {
-            result = new TYPENAME(parseResult);
-            return true;
-        }
-        result = default;
-        return false;
-    }
+    

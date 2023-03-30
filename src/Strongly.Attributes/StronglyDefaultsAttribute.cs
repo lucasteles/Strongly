@@ -17,7 +17,7 @@ namespace Strongly
         /// <param name="converters">JSON library used to serialize/deserialize strongly-typed ID value.
         /// Defaults to <see cref="StronglyConverter.SystemTextJson"/> and <see cref="StronglyConverter.TypeConverter"/></param>
         /// <param name="implementations">Interfaces and patterns the strongly typed id should implement
-        /// Defaults to <see cref="StronglyImplementations.IEquatable"/> and <see cref="StronglyImplementations.IComparable"/></param>
+        /// Defaults to <see cref="StronglyImplementations.Parsable"/>,<see cref="StronglyImplementations.IEquatable"/> and <see cref="StronglyImplementations.IComparable"/></param>
         public StronglyDefaultsAttribute(
             StronglyType backingType = StronglyType.Default,
             StronglyConverter converters = StronglyConverter.Default,

@@ -22,15 +22,4 @@
     public override string ToString() => Value.ToString();
     public static bool operator ==(TYPENAME a, TYPENAME b) => a.Equals(b);
     public static bool operator !=(TYPENAME a, TYPENAME b) => !(a == b);
-
-    public static TYPENAME Parse(string value) => new TYPENAME(System.Guid.Parse(value));
-    public static bool TryParse(string value, out TYPENAME result)
-    {
-        if (System.Guid.TryParse(value, out System.Guid parseResult))
-        {
-            result = new TYPENAME(parseResult);
-            return true;
-        }
-        result = default;
-        return false;
-    }
+    
