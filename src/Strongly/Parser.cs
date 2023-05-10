@@ -95,6 +95,7 @@ static class Parser
             var converter = StronglyConverter.Default;
             var implementations = StronglyImplementations.Default;
             var cast = StronglyCast.Default;
+            var math = StronglyMath.Default;
 
             if (!attribute.ConstructorArguments.IsEmpty)
             {
@@ -106,6 +107,9 @@ static class Parser
 
                 switch (args.Length)
                 {
+                    case 5:
+                        math = (StronglyMath) args[4].Value!;
+                        goto case 4;
                     case 4:
                         cast = (StronglyCast) args[3].Value!;
                         goto case 3;
@@ -143,6 +147,9 @@ static class Parser
                             case "cast":
                                 cast = (StronglyCast) typedConstant.Value!;
                                 break;
+                            case "math":
+                                math = (StronglyMath) typedConstant.Value!;
+                                break;
                         }
                 }
 
@@ -150,8 +157,8 @@ static class Parser
                 break;
 
             var location = attribute.ApplicationSyntaxReference?.GetSyntax(ct).GetLocation();
-            config = new StronglyConfiguration(backingType, converter, implementations, cast,
-                location);
+            config = new StronglyConfiguration(
+                backingType, converter, implementations, cast, math, location);
             break;
         }
 
@@ -184,6 +191,7 @@ static class Parser
             var converter = StronglyConverter.Default;
             var implementations = StronglyImplementations.Default;
             var cast = StronglyCast.Default;
+            var math = StronglyMath.Default;
             var hasMisconfiguredInput = false;
 
             if (!attribute.ConstructorArguments.IsEmpty)
@@ -196,6 +204,9 @@ static class Parser
 
                 switch (args.Length)
                 {
+                    case 5:
+                        math = (StronglyMath) args[4].Value!;
+                        goto case 4;
                     case 4:
                         cast = (StronglyCast) args[3].Value!;
                         goto case 3;
@@ -232,6 +243,9 @@ static class Parser
                             case "cast":
                                 cast = (StronglyCast) typedConstant.Value!;
                                 break;
+                            case "math":
+                                math = (StronglyMath) typedConstant.Value!;
+                                break;
                         }
                 }
 
@@ -239,7 +253,7 @@ static class Parser
                 break;
 
             var location = attribute.ApplicationSyntaxReference?.GetSyntax(ct).GetLocation();
-            return new StronglyConfiguration(backingType, converter, implementations, cast,
+            return new StronglyConfiguration(backingType, converter, implementations, cast, math,
                 location);
         }
 

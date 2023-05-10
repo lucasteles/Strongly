@@ -75,3 +75,8 @@ public partial struct EquatableBigIntegerId
 public partial struct ComparableBigIntegerId
 {
 }
+
+[Strongly(StronglyType.BigInteger, math: StronglyMath.All)]
+public partial struct BigIntMath
+{
+}

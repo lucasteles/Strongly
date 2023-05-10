@@ -21,17 +21,20 @@ namespace Strongly
         /// If not set, uses <see cref="StronglyDefaultsAttribute.Implementations"/>, which defaults to <see cref="StronglyImplementations.IEquatable"/>
         /// and <see cref="StronglyImplementations.IComparable"/></param>
         /// <param name="cast"></param>
+        /// <param name="math"></param>
         public StronglyAttribute(
             StronglyType backingType = StronglyType.Default,
             StronglyConverter converters = StronglyConverter.Default,
             StronglyImplementations implementations = StronglyImplementations.Default,
-            StronglyCast cast = StronglyCast.Default
+            StronglyCast cast = StronglyCast.Default,
+            StronglyMath math = StronglyMath.Default
         )
         {
             BackingType = backingType;
             Converters = converters;
             Implementations = implementations;
             Cast = cast;
+            Math = math;
         }
 
         /// <summary>
@@ -53,5 +56,7 @@ namespace Strongly
         /// Define casting operators that the strongly type should implement
         /// </summary>
         public StronglyCast Cast { get; }
+
+        public StronglyMath Math { get; }
     }
 }

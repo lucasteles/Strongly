@@ -152,6 +152,24 @@ static class SourceGenerationHelper
         if (castOperators.IsSet(StronglyCast.ImplicitTo))
             sb.AppendLine(EmbeddedSources.ImplicitTo);
 
+        if (resources.IsNumeric &&
+            ctx.Config.Math is not (StronglyMath.None or StronglyMath.Default))
+        {
+            var math = ctx.Config.Math;
+            sb.AppendLine(EmbeddedSources.MathConst);
+            if (math.IsSet(StronglyMath.Addition)) sb.AppendLine(EmbeddedSources.MathAddition);
+            if (math.IsSet(StronglyMath.Subtraction))
+                sb.AppendLine(EmbeddedSources.MathSubtraction);
+            if (math.IsSet(StronglyMath.Division))
+                sb.AppendLine(EmbeddedSources.MathDivision);
+            if (math.IsSet(StronglyMath.Multiplication))
+                sb.AppendLine(EmbeddedSources.MathMultiplication);
+            if (math.IsSet(StronglyMath.Negation))
+                sb.AppendLine(EmbeddedSources.MathNegation);
+            if (math.IsSet(StronglyMath.Compare))
+                sb.AppendLine(EmbeddedSources.MathCompare);
+        }
+
         foreach (var templateVar in resources.TemplateVars)
             sb.Replace(templateVar.Key, resources.Customizations[templateVar.Value]);
 

@@ -438,4 +438,79 @@ public class BigIntegerIdTests
     {
         public NewtonsoftJsonBigIntegerId? Id { get; set; }
     }
+
+    [Fact]
+    public void AdditionTests()
+    {
+        var (v1, v2) = (1, 10);
+        var (t1, t2) = (new BigIntMath(v1), new BigIntMath(v2));
+        var v3 = v1 + v2;
+        var t3 = t1 + t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void SubtractionTests()
+    {
+        var (v1, v2) = (1, 10);
+        var (t1, t2) = (new BigIntMath(v1), new BigIntMath(v2));
+        var v3 = v1 - v2;
+        var t3 = t1 - t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void DivisionTests()
+    {
+        var (v1, v2) = (10, 3);
+        var (t1, t2) = (new BigIntMath(v1), new BigIntMath(v2));
+        var v3 = v1 / v2;
+        var t3 = t1 / t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void MultiplicationTests()
+    {
+        var (v1, v2) = (10, 3);
+        var (t1, t2) = (new BigIntMath(v1), new BigIntMath(v2));
+        var v3 = v1 * v2;
+        var t3 = t1 * t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void NegationTests()
+    {
+        const int v1 = 10;
+        var t1 = new BigIntMath(v1);
+
+        var v2 = -v1;
+        var t2 = -t1;
+
+        Assert.Equal(t2.Value, v2);
+    }
+
+    [Fact]
+    public void ConstTest()
+    {
+        const int v1 = 42;
+        const int expected = v1 + 0 + 1;
+
+        var res = new BigIntMath(v1) + BigIntMath.Zero + BigIntMath.One;
+        Assert.Equal(expected, res.Value);
+    }
+
+    [Theory]
+    [InlineData(1, 2)]
+    [InlineData(2, 1)]
+    [InlineData(1, 1)]
+    [InlineData(0, 0)]
+    public void CompareOperator(int a, int b)
+    {
+        Assert.Equal(a > b, new BigIntMath(a) > new BigIntMath(b));
+        Assert.Equal(a < b, new BigIntMath(a) < new BigIntMath(b));
+        Assert.Equal(a >= b, new BigIntMath(a) >= new BigIntMath(b));
+        Assert.Equal(a <= b, new BigIntMath(a) <= new BigIntMath(b));
+    }
 }

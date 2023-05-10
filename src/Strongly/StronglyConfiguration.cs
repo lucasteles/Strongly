@@ -7,6 +7,7 @@ readonly record struct StronglyConfiguration(
     StronglyConverter Converters,
     StronglyImplementations Implementations,
     StronglyCast Cast,
+    StronglyMath Math,
     Location? Location = null)
 {
     /// <summary>
@@ -18,6 +19,7 @@ readonly record struct StronglyConfiguration(
         BackingType: StronglyType.Guid,
         Converters: StronglyConverter.TypeConverter | StronglyConverter.SystemTextJson,
         Cast: StronglyCast.None,
+        Math: StronglyMath.None,
         Implementations: StronglyImplementations.Parsable
                          | StronglyImplementations.IEquatable
                          | StronglyImplementations.IComparable
@@ -67,10 +69,20 @@ readonly record struct StronglyConfiguration(
                 var (specificValue, _) => specificValue,
             };
 
+        var math =
+            (attributeValues.Math, globalValues?.Math) switch
+            {
+                (StronglyMath.Default, null) => Defaults.Math,
+                (StronglyMath.Default, StronglyMath.Default) => Defaults.Math,
+                (StronglyMath.Default, var globalDefault) => globalDefault.Value,
+                var (specificValue, _) => specificValue,
+            };
+
         return new StronglyConfiguration(
             backingType,
             converter,
             implementations,
-            casts);
+            casts,
+            math);
     }
 }

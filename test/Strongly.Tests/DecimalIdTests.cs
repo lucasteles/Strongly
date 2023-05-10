@@ -30,7 +30,6 @@ public class DecimalIdTests
         Assert.Equal(0, DecimalId.Empty.Value);
     }
 
-
     [Fact]
     public void DifferentValuesAreUnequal()
     {
@@ -426,5 +425,80 @@ public class DecimalIdTests
     public class EntityWithNullableId
     {
         public NewtonsoftJsonDecimalId? Id { get; set; }
+    }
+
+    [Fact]
+    public void AdditionTests()
+    {
+        var (v1, v2) = (1M, 10M);
+        var (t1, t2) = (new DecimalMath(v1), new DecimalMath(v2));
+        var v3 = v1 + v2;
+        var t3 = t1 + t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void SubtractionTests()
+    {
+        var (v1, v2) = (1M, 10M);
+        var (t1, t2) = (new DecimalMath(v1), new DecimalMath(v2));
+        var v3 = v1 - v2;
+        var t3 = t1 - t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void DivisionTests()
+    {
+        var (v1, v2) = (10M, 3M);
+        var (t1, t2) = (new DecimalMath(v1), new DecimalMath(v2));
+        var v3 = v1 / v2;
+        var t3 = t1 / t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void MultiplicationTests()
+    {
+        var (v1, v2) = (10M, 3M);
+        var (t1, t2) = (new DecimalMath(v1), new DecimalMath(v2));
+        var v3 = v1 * v2;
+        var t3 = t1 * t2;
+        Assert.Equal(t3.Value, v3);
+    }
+
+    [Fact]
+    public void NegationTests()
+    {
+        const decimal v1 = 10M;
+        var t1 = new DecimalMath(v1);
+
+        var v2 = -v1;
+        var t2 = -t1;
+
+        Assert.Equal(t2.Value, v2);
+    }
+
+    [Fact]
+    public void ConstTest()
+    {
+        const decimal v1 = 42M;
+        const decimal expected = v1 + decimal.Zero + decimal.One;
+
+        var res = new DecimalMath(v1) + DecimalMath.Zero + DecimalMath.One;
+        Assert.Equal(expected, res.Value);
+    }
+
+    [Theory]
+    [InlineData(1, 2)]
+    [InlineData(2, 1)]
+    [InlineData(1, 1)]
+    [InlineData(0, 0)]
+    public void CompareOperator(decimal a, decimal b)
+    {
+        Assert.Equal(a > b, new DecimalMath(a) > new DecimalMath(b));
+        Assert.Equal(a < b, new DecimalMath(a) < new DecimalMath(b));
+        Assert.Equal(a >= b, new DecimalMath(a) >= new DecimalMath(b));
+        Assert.Equal(a <= b, new DecimalMath(a) <= new DecimalMath(b));
     }
 }

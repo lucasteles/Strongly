@@ -20,6 +20,9 @@ static class StronglyConverterExtensions
     public static bool IsSet(this StronglyCast value, StronglyCast flag)
         => (value & flag) == flag;
 
+    public static bool IsSet(this StronglyMath value, StronglyMath flag)
+        => (value & flag) == flag;
+
     public static bool IsValidFlags(this StronglyConverter value) =>
         (int) value >= 0 && (int) value < MaxConverterId;
 

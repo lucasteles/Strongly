@@ -75,3 +75,8 @@ public partial struct EquatableDecimalId
 public partial struct ComparableDecimalId
 {
 }
+
+[Strongly(StronglyType.Decimal, math: StronglyMath.All)]
+public partial struct DecimalMath
+{
+}
