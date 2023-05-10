@@ -66,12 +66,15 @@ static class SourceGenerationHelper
                 "Cannot use default converter - must provide concrete values or None",
                 nameof(ctx.Config.Converters));
 
+        var castOperators = ctx.Config.Cast is StronglyCast.Default
+            ? StronglyCast.None
+            : ctx.Config.Cast;
+
         var useSchemaFilter = converters.IsSet(StronglyConverter.SwaggerSchemaFilter);
         var useTypeConverter = converters.IsSet(StronglyConverter.TypeConverter);
         var useNewtonsoftJson = converters.IsSet(StronglyConverter.NewtonsoftJson);
         var useSystemTextJson = converters.IsSet(StronglyConverter.SystemTextJson);
-        var useEfValueConverter = converters
-            .IsSet(StronglyConverter.EfValueConverter);
+        var useEfValueConverter = converters.IsSet(StronglyConverter.EfValueConverter);
         var useDapperTypeHandler = converters.IsSet(StronglyConverter.DapperTypeHandler);
 
         var implementations = ctx.Config.Implementations;
@@ -140,6 +143,15 @@ static class SourceGenerationHelper
         if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson);
         if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter);
 
+        if (castOperators.IsSet(StronglyCast.ExplicitFrom))
+            sb.AppendLine(EmbeddedSources.ExplicitFrom);
+        if (castOperators.IsSet(StronglyCast.ExplicitTo))
+            sb.AppendLine(EmbeddedSources.ExplicitTo);
+        if (castOperators.IsSet(StronglyCast.ImplicitFrom))
+            sb.AppendLine(EmbeddedSources.ImplicitFrom);
+        if (castOperators.IsSet(StronglyCast.ImplicitTo))
+            sb.AppendLine(EmbeddedSources.ImplicitTo);
+
         foreach (var templateVar in resources.TemplateVars)
             sb.Replace(templateVar.Key, resources.Customizations[templateVar.Value]);
 
@@ -158,7 +170,6 @@ static class SourceGenerationHelper
             .Replace("[?]", resources.NullableEnable ? "?" : string.Empty)
             .Replace("[GET_HASH_CODE]",
                 resources.NullableEnable ? "Value?.GetHashCode() ?? 0" : "Value.GetHashCode()");
-
 
         sb.AppendLine(@"    }");
 

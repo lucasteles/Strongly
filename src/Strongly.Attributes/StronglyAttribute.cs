@@ -10,24 +10,28 @@ namespace Strongly
     public sealed class StronglyAttribute : Attribute
     {
         /// <summary>
-        /// Make the struct a strongly typed ID
+        /// Make the struct a strong type
         /// </summary>
         /// <param name="backingType">The <see cref="Type"/> to use to store the strongly-typed ID value.
         /// If not set, uses <see cref="StronglyDefaultsAttribute.BackingType"/>, which defaults to <see cref="StronglyType.Guid"/></param>
         /// <param name="converters">Converters to create for serializing/deserializing the strongly-typed ID value.
         /// If not set, uses <see cref="StronglyDefaultsAttribute.Converters"/>, which defaults to <see cref="StronglyConverter.NewtonsoftJson"/>
         /// and <see cref="StronglyConverter.TypeConverter"/></param>
-        /// <param name="implementations">Interfaces and patterns the strongly typed id should implement
+        /// <param name="implementations">Interfaces and patterns the strong type should implement
         /// If not set, uses <see cref="StronglyDefaultsAttribute.Implementations"/>, which defaults to <see cref="StronglyImplementations.IEquatable"/>
         /// and <see cref="StronglyImplementations.IComparable"/></param>
+        /// <param name="cast"></param>
         public StronglyAttribute(
             StronglyType backingType = StronglyType.Default,
             StronglyConverter converters = StronglyConverter.Default,
-            StronglyImplementations implementations = StronglyImplementations.Default)
+            StronglyImplementations implementations = StronglyImplementations.Default,
+            StronglyCast cast = StronglyCast.Default
+        )
         {
             BackingType = backingType;
             Converters = converters;
             Implementations = implementations;
+            Cast = cast;
         }
 
         /// <summary>
@@ -41,8 +45,13 @@ namespace Strongly
         public StronglyConverter Converters { get; }
 
         /// <summary>
-        /// Interfaces and patterns the strongly typed id should implement
+        /// Interfaces and patterns the strong type should implement
         /// </summary>
         public StronglyImplementations Implementations { get; }
+
+        /// <summary>
+        /// Define casting operators that the strongly type should implement
+        /// </summary>
+        public StronglyCast Cast { get; }
     }
 }

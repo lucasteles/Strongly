@@ -2,9 +2,12 @@ using Microsoft.CodeAnalysis;
 
 namespace Strongly;
 
-readonly record struct StronglyConfiguration(StronglyType BackingType,
+readonly record struct StronglyConfiguration(
+    StronglyType BackingType,
     StronglyConverter Converters,
-    StronglyImplementations Implementations, Location? Location = null)
+    StronglyImplementations Implementations,
+    StronglyCast Cast,
+    Location? Location = null)
 {
     /// <summary>
     /// Gets the default values for when a default attribute is not used.
@@ -14,6 +17,7 @@ readonly record struct StronglyConfiguration(StronglyType BackingType,
     public static readonly StronglyConfiguration Defaults = new(
         BackingType: StronglyType.Guid,
         Converters: StronglyConverter.TypeConverter | StronglyConverter.SystemTextJson,
+        Cast: StronglyCast.None,
         Implementations: StronglyImplementations.Parsable
                          | StronglyImplementations.IEquatable
                          | StronglyImplementations.IComparable
@@ -41,7 +45,7 @@ readonly record struct StronglyConfiguration(StronglyType BackingType,
             (StronglyConverter.Default, null) => Defaults.Converters,
             (StronglyConverter.Default, StronglyConverter.Default) => Defaults.Converters,
             (StronglyConverter.Default, var globalDefault) => globalDefault.Value,
-            var (specificValue, _) => specificValue
+            var (specificValue, _) => specificValue,
         };
 
         var implementations =
@@ -51,12 +55,22 @@ readonly record struct StronglyConfiguration(StronglyType BackingType,
                 (StronglyImplementations.Default, StronglyImplementations.Default) =>
                     Defaults.Implementations,
                 (StronglyImplementations.Default, var globalDefault) => globalDefault.Value,
-                var (specificValue, _) => specificValue
+                var (specificValue, _) => specificValue,
+            };
+
+        var casts =
+            (attributeValues.Cast, globalValues?.Cast) switch
+            {
+                (StronglyCast.Default, null) => Defaults.Cast,
+                (StronglyCast.Default, StronglyCast.Default) => Defaults.Cast,
+                (StronglyCast.Default, var globalDefault) => globalDefault.Value,
+                var (specificValue, _) => specificValue,
             };
 
         return new StronglyConfiguration(
             backingType,
             converter,
-            implementations);
+            implementations,
+            casts);
     }
 }

@@ -3,18 +3,18 @@ using System;
 namespace Strongly
 {
     /// <summary>
-    /// Interfaces and patterns the strongly typed id should implement
+    /// Interfaces and patterns the strongly type should implement
     /// </summary>
     [Flags]
     public enum StronglyImplementations
     {
         /// <summary>
-        /// Don't implement any additional members for the strongly typed ID
+        /// Don't implement any additional members for the strong type
         /// </summary>
         None = 0,
 
         /// <summary>
-        /// Use the default implementations for the strongly typed Id.
+        /// Use the default implementations for the strong type.
         /// This will be the value provided in the <see cref="StronglyDefaultsAttribute"/>, which falls back to
         /// <see cref="Parsable"/>, <see cref="IEquatable"/> and <see cref="IComparable" />
         /// </summary>

@@ -14,11 +14,14 @@ static class StronglyConverterExtensions
     public static bool IsSet(this StronglyConverter value, StronglyConverter flag)
         => (value & flag) == flag;
 
-    public static bool IsValidFlags(this StronglyConverter value) =>
-        (int) value >= 0 && (int) value < MaxConverterId;
-
     public static bool IsSet(this StronglyImplementations value, StronglyImplementations flag)
         => (value & flag) == flag;
+
+    public static bool IsSet(this StronglyCast value, StronglyCast flag)
+        => (value & flag) == flag;
+
+    public static bool IsValidFlags(this StronglyConverter value) =>
+        (int) value >= 0 && (int) value < MaxConverterId;
 
     public static bool IsValidFlags(this StronglyImplementations value) =>
         (int) value >= 0 && (int) value < MaxImplementationsId;

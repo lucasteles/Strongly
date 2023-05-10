@@ -435,4 +435,26 @@ public class GuidIdTests
 
         Assert.Equal(foo1, foo2);
     }
+
+    [Fact]
+    public void ImplicitCasts()
+    {
+        var value = Guid.NewGuid();
+        ImplicitGuid typedValue = value;
+        Guid valueBack = typedValue;
+
+        Assert.Equal(value, typedValue.Value);
+        Assert.Equal(value, valueBack);
+    }
+
+    [Fact]
+    public void ExplicitCasts()
+    {
+        var value = Guid.NewGuid();
+        var typedValue = (ExplicitGuid) value;
+        var valueBack = (Guid) typedValue;
+
+        Assert.Equal(value, typedValue.Value);
+        Assert.Equal(value, valueBack);
+    }
 }
