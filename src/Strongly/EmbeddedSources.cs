@@ -52,6 +52,11 @@ static class EmbeddedSources
     internal static readonly string MathMultiplication =
         LoadEmbeddedResource("Base.Math_Multiplication");
 
+    internal static readonly string DefaultEfValueConverter =
+        LoadEmbeddedResource("Base.EfValueConverter");
+
+    internal static readonly string DefaultIComparable =
+        LoadEmbeddedResource("Base.IComparable");
 
     internal static readonly ResourceCollection GuidResources = new(
         typeof(Guid).FullName,
@@ -60,9 +65,9 @@ static class EmbeddedSources
         LoadEmbeddedResource("Guid.Guid_NewtonsoftJsonConverter"),
         LoadEmbeddedResource("Guid.Guid_SystemTextJsonConverter"),
         LoadEmbeddedResource("Guid.Guid_TypeConverter"),
-        LoadEmbeddedResource("Guid.Guid_EfValueConverter"),
+        DefaultEfValueConverter,
         LoadEmbeddedResource("Guid.Guid_DapperTypeHandler"),
-        LoadEmbeddedResource("Guid.Guid_IComparable"),
+        DefaultIComparable,
         LoadEmbeddedResource("Guid.Guid_SwaggerSchemaFilter"),
         LoadEmbeddedResource("Guid.Guid_Parsable")
     )
@@ -82,9 +87,9 @@ static class EmbeddedSources
         LoadEmbeddedResource("Int.Int_NewtonsoftJsonConverter"),
         LoadEmbeddedResource("Int.Int_SystemTextJsonConverter"),
         LoadEmbeddedResource("Int.Int_TypeConverter"),
-        LoadEmbeddedResource("Int.Int_EfValueConverter"),
+        DefaultEfValueConverter,
         LoadEmbeddedResource("Int.Int_DapperTypeHandler"),
-        LoadEmbeddedResource("Int.Int_IComparable"),
+        DefaultIComparable,
         LoadEmbeddedResource("Int.Int_SwaggerSchemaFilter"),
         LoadEmbeddedResource("Int.Int_Parsable")
     )
@@ -99,9 +104,9 @@ static class EmbeddedSources
         LoadEmbeddedResource("Long.Long_NewtonsoftJsonConverter"),
         LoadEmbeddedResource("Long.Long_SystemTextJsonConverter"),
         LoadEmbeddedResource("Long.Long_TypeConverter"),
-        LoadEmbeddedResource("Long.Long_EfValueConverter"),
+        DefaultEfValueConverter,
         LoadEmbeddedResource("Long.Long_DapperTypeHandler"),
-        LoadEmbeddedResource("Long.Long_IComparable"),
+        DefaultIComparable,
         LoadEmbeddedResource("Long.Long_SwaggerSchemaFilter"),
         LoadEmbeddedResource("Long.Long_Parsable")
     )
@@ -118,7 +123,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("BigInteger.BigInteger_TypeConverter"),
         LoadEmbeddedResource("BigInteger.BigInteger_EfValueConverter"),
         LoadEmbeddedResource("BigInteger.BigInteger_DapperTypeHandler"),
-        LoadEmbeddedResource("BigInteger.BigInteger_IComparable"),
+        DefaultIComparable,
         LoadEmbeddedResource("BigInteger.BigInteger_SwaggerSchemaFilter"),
         LoadEmbeddedResource("BigInteger.BigInteger_Parsable")
     )
@@ -137,9 +142,9 @@ static class EmbeddedSources
         LoadEmbeddedResource("Decimal.Decimal_NewtonsoftJsonConverter"),
         LoadEmbeddedResource("Decimal.Decimal_SystemTextJsonConverter"),
         LoadEmbeddedResource("Decimal.Decimal_TypeConverter"),
-        LoadEmbeddedResource("Decimal.Decimal_EfValueConverter"),
+        DefaultEfValueConverter,
         LoadEmbeddedResource("Decimal.Decimal_DapperTypeHandler"),
-        LoadEmbeddedResource("Decimal.Decimal_IComparable"),
+        DefaultIComparable,
         LoadEmbeddedResource("Decimal.Decimal_SwaggerSchemaFilter"),
         LoadEmbeddedResource("Decimal.Decimal_Parsable")
     )
@@ -154,7 +159,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("String.String_NewtonsoftJsonConverter"),
         LoadEmbeddedResource("String.String_SystemTextJsonConverter"),
         LoadEmbeddedResource("String.String_TypeConverter"),
-        LoadEmbeddedResource("String.String_EfValueConverter"),
+        DefaultEfValueConverter,
         LoadEmbeddedResource("String.String_DapperTypeHandler"),
         LoadEmbeddedResource("String.String_IComparable"),
         LoadEmbeddedResource("String.String_SwaggerSchemaFilter"),
@@ -194,7 +199,7 @@ static class EmbeddedSources
         LoadEmbeddedResource("NewId.NewId_TypeConverter"),
         LoadEmbeddedResource("NewId.NewId_EfValueConverter"),
         LoadEmbeddedResource("NewId.NewId_DapperTypeHandler"),
-        LoadEmbeddedResource("NewId.NewId_IComparable"),
+        DefaultIComparable,
         LoadEmbeddedResource("NewId.NewId_SwaggerSchemaFilter"),
         LoadEmbeddedResource("NewId.NewId_Parsable")
     );
