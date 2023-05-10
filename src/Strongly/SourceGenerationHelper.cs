@@ -15,21 +15,24 @@ static class SourceGenerationHelper
             {
                 TemplateVars = new()
                 {
-                    ["[NEW_METHOD]"] = "NEW_DEFAULT",
+                    ["[NEW_METHOD]"] = EmbeddedSources.GuidResources
+                        .Customizations["NEW_DEFAULT"].Value,
                 },
             },
             StronglyType.SequentialGuid => EmbeddedSources.GuidResources with
             {
                 TemplateVars = new()
                 {
-                    ["[NEW_METHOD]"] = "NEW_SEQUENTIAL",
+                    ["[NEW_METHOD]"] = EmbeddedSources.GuidResources
+                        .Customizations["NEW_SEQUENTIAL"].Value,
                 },
             },
             StronglyType.GuidComb => EmbeddedSources.GuidResources with
             {
                 TemplateVars = new()
                 {
-                    ["[NEW_METHOD]"] = "NEW_COMB",
+                    ["[NEW_METHOD]"] = EmbeddedSources.GuidResources
+                        .Customizations["NEW_COMB"].Value,
                 },
             },
             StronglyType.Int => EmbeddedSources.IntResources,
@@ -90,7 +93,7 @@ static class SourceGenerationHelper
         var parentsCount = 0;
 
         sb ??= new StringBuilder();
-        sb.Append(resources.Header);
+        sb.Append(resources.Header.Value);
 
         if (resources.NullableEnable) sb.AppendLine("#nullable enable");
 
@@ -123,7 +126,7 @@ static class SourceGenerationHelper
         if (useTypeConverter) sb.AppendLine(EmbeddedSources.TypeConverterAttributeSource);
         if (useSchemaFilter) sb.AppendLine(EmbeddedSources.SwaggerSchemaFilterAttributeSource);
 
-        var baseDef = EmbeddedSources.BaseTypeDef + resources.Base;
+        var baseDef = EmbeddedSources.BaseTypeDef.Value + resources.Base.Value;
         if (ctx.IsRecord)
         {
             var ctor = baseDef.Split('\n')
@@ -136,54 +139,55 @@ static class SourceGenerationHelper
 
         ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable);
 
-        if (useIComparable) sb.AppendLine(resources.Comparable);
-        if (useParsable) sb.AppendLine(resources.Parsable);
-        if (useEfValueConverter) sb.AppendLine(resources.EfValueConverter);
-        if (useDapperTypeHandler) sb.AppendLine(resources.DapperTypeHandler);
-        if (useTypeConverter) sb.AppendLine(resources.TypeConverter);
-        if (useNewtonsoftJson) sb.AppendLine(resources.Newtonsoft);
-        if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson);
-        if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter);
+        if (useIComparable) sb.AppendLine(resources.Comparable.Value);
+        if (useParsable) sb.AppendLine(resources.Parsable.Value);
+        if (useEfValueConverter) sb.AppendLine(resources.EfValueConverter.Value);
+        if (useDapperTypeHandler) sb.AppendLine(resources.DapperTypeHandler.Value);
+        if (useTypeConverter) sb.AppendLine(resources.TypeConverter.Value);
+        if (useNewtonsoftJson) sb.AppendLine(resources.Newtonsoft.Value);
+        if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson.Value);
+        if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter.Value);
 
         if (castOperators.IsSet(StronglyCast.ExplicitFrom))
-            sb.AppendLine(EmbeddedSources.ExplicitFrom);
+            sb.AppendLine(EmbeddedSources.ExplicitFrom.Value);
         if (castOperators.IsSet(StronglyCast.ExplicitTo))
-            sb.AppendLine(EmbeddedSources.ExplicitTo);
+            sb.AppendLine(EmbeddedSources.ExplicitTo.Value);
         if (castOperators.IsSet(StronglyCast.ImplicitFrom))
-            sb.AppendLine(EmbeddedSources.ImplicitFrom);
+            sb.AppendLine(EmbeddedSources.ImplicitFrom.Value);
         if (castOperators.IsSet(StronglyCast.ImplicitTo))
-            sb.AppendLine(EmbeddedSources.ImplicitTo);
+            sb.AppendLine(EmbeddedSources.ImplicitTo.Value);
 
         if (resources.IsNumeric &&
             ctx.Config.Math is not (StronglyMath.None or StronglyMath.Default))
         {
             var math = ctx.Config.Math;
-            sb.AppendLine(EmbeddedSources.MathConst);
-            if (math.IsSet(StronglyMath.Addition)) sb.AppendLine(EmbeddedSources.MathAddition);
+            sb.AppendLine(EmbeddedSources.MathConst.Value);
+            if (math.IsSet(StronglyMath.Addition))
+                sb.AppendLine(EmbeddedSources.MathAddition.Value);
             if (math.IsSet(StronglyMath.Subtraction))
-                sb.AppendLine(EmbeddedSources.MathSubtraction);
+                sb.AppendLine(EmbeddedSources.MathSubtraction.Value);
             if (math.IsSet(StronglyMath.Division))
-                sb.AppendLine(EmbeddedSources.MathDivision);
+                sb.AppendLine(EmbeddedSources.MathDivision.Value);
             if (math.IsSet(StronglyMath.Multiplication))
-                sb.AppendLine(EmbeddedSources.MathMultiplication);
+                sb.AppendLine(EmbeddedSources.MathMultiplication.Value);
             if (math.IsSet(StronglyMath.Negation))
-                sb.AppendLine(EmbeddedSources.MathNegation);
+                sb.AppendLine(EmbeddedSources.MathNegation.Value);
             if (math.IsSet(StronglyMath.Compare))
-                sb.AppendLine(EmbeddedSources.MathCompare);
+                sb.AppendLine(EmbeddedSources.MathCompare.Value);
         }
 
-        foreach (var templateVar in resources.TemplateVars)
-            sb.Replace(templateVar.Key, resources.Customizations[templateVar.Value]);
-
         sb.Replace(EmbeddedSources.ToStringKey,
-            resources.Customizations.TryGetValue(EmbeddedSources.ToStringKey, out var toStr)
+            resources.TemplateVars.TryGetValue(EmbeddedSources.ToStringKey, out var toStr)
                 ? toStr
                 : EmbeddedSources.DefaultToString);
 
         sb.Replace(EmbeddedSources.CtorKey,
-            resources.Customizations.TryGetValue(EmbeddedSources.CtorKey, out var ctorInit)
+            resources.TemplateVars.TryGetValue(EmbeddedSources.CtorKey, out var ctorInit)
                 ? ctorInit
                 : EmbeddedSources.DefaultCtor);
+
+        foreach (var templateVar in resources.TemplateVars)
+            sb.Replace(templateVar.Key, templateVar.Value);
 
         sb.Replace("BASE_TYPENAME", resources.InternalType)
             .Replace("TYPENAME", ctx.Name)
