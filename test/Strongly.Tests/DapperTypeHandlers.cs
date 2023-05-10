@@ -19,5 +19,7 @@ public static class DapperTypeHandlers
         SqlMapper.AddTypeHandler(new DapperDecimalId.DapperTypeHandler());
         SqlMapper.AddTypeHandler(new DapperSequentialGuidId.DapperTypeHandler());
         SqlMapper.AddTypeHandler(new DapperGuidCombId.DapperTypeHandler());
+        SqlMapper.AddTypeHandler(new DapperDoubleId.DapperTypeHandler());
+        SqlMapper.AddTypeHandler(new DapperFloatId.DapperTypeHandler());
     }
 }

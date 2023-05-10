@@ -11,12 +11,35 @@ static class SourceGenerationHelper
     {
         var resources = ctx.Config.BackingType switch
         {
-            StronglyType.Guid => EmbeddedSources.GuidResources,
-            StronglyType.SequentialGuid => EmbeddedSources.SequentialGuidResources,
-            StronglyType.GuidComb => EmbeddedSources.GuidComb,
+            StronglyType.Guid => EmbeddedSources.GuidResources with
+            {
+                TemplateVars = new()
+                {
+                    ["[NEW_METHOD]"] = EmbeddedSources.GuidResources
+                        .Customizations["NEW_DEFAULT"].Value,
+                },
+            },
+            StronglyType.SequentialGuid => EmbeddedSources.GuidResources with
+            {
+                TemplateVars = new()
+                {
+                    ["[NEW_METHOD]"] = EmbeddedSources.GuidResources
+                        .Customizations["NEW_SEQUENTIAL"].Value,
+                },
+            },
+            StronglyType.GuidComb => EmbeddedSources.GuidResources with
+            {
+                TemplateVars = new()
+                {
+                    ["[NEW_METHOD]"] = EmbeddedSources.GuidResources
+                        .Customizations["NEW_COMB"].Value,
+                },
+            },
             StronglyType.Int => EmbeddedSources.IntResources,
             StronglyType.Long => EmbeddedSources.LongResources,
             StronglyType.Decimal => EmbeddedSources.DecimalResources,
+            StronglyType.Double => EmbeddedSources.DoubleResources,
+            StronglyType.Float => EmbeddedSources.FloatResources,
             StronglyType.String => EmbeddedSources.StringResources,
             StronglyType.NullableString =>
                 EmbeddedSources.NullableStringResources,
@@ -48,12 +71,15 @@ static class SourceGenerationHelper
                 "Cannot use default converter - must provide concrete values or None",
                 nameof(ctx.Config.Converters));
 
+        var castOperators = ctx.Config.Cast is StronglyCast.Default
+            ? StronglyCast.None
+            : ctx.Config.Cast;
+
         var useSchemaFilter = converters.IsSet(StronglyConverter.SwaggerSchemaFilter);
         var useTypeConverter = converters.IsSet(StronglyConverter.TypeConverter);
         var useNewtonsoftJson = converters.IsSet(StronglyConverter.NewtonsoftJson);
         var useSystemTextJson = converters.IsSet(StronglyConverter.SystemTextJson);
-        var useEfValueConverter = converters
-            .IsSet(StronglyConverter.EfValueConverter);
+        var useEfValueConverter = converters.IsSet(StronglyConverter.EfValueConverter);
         var useDapperTypeHandler = converters.IsSet(StronglyConverter.DapperTypeHandler);
 
         var implementations = ctx.Config.Implementations;
@@ -67,7 +93,7 @@ static class SourceGenerationHelper
         var parentsCount = 0;
 
         sb ??= new StringBuilder();
-        sb.Append(resources.Header);
+        sb.Append(resources.Header.Value);
 
         if (resources.NullableEnable) sb.AppendLine("#nullable enable");
 
@@ -100,28 +126,74 @@ static class SourceGenerationHelper
         if (useTypeConverter) sb.AppendLine(EmbeddedSources.TypeConverterAttributeSource);
         if (useSchemaFilter) sb.AppendLine(EmbeddedSources.SwaggerSchemaFilterAttributeSource);
 
+        var baseDef = EmbeddedSources.BaseTypeDef.Value + resources.Base.Value;
         if (ctx.IsRecord)
         {
-            var ctor = resources.Base.Split('\n')
+            var ctor = baseDef.Split('\n')
                 .First(x => x.Trim().StartsWith("public TYPENAME("))
                 .Trim().Split('(', ')')[1];
             sb.Append($"readonly partial record struct TYPENAME({ctor}): INTERFACES {{ \n ");
         }
         else
-            sb.Append(resources.Base);
+            sb.Append(baseDef);
 
         ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable);
 
-        if (useIComparable) sb.AppendLine(resources.Comparable);
-        if (useParsable) sb.AppendLine(resources.Parsable);
-        if (useEfValueConverter) sb.AppendLine(resources.EfValueConverter);
-        if (useDapperTypeHandler) sb.AppendLine(resources.DapperTypeHandler);
-        if (useTypeConverter) sb.AppendLine(resources.TypeConverter);
-        if (useNewtonsoftJson) sb.AppendLine(resources.Newtonsoft);
-        if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson);
-        if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter);
+        if (useIComparable) sb.AppendLine(resources.Comparable.Value);
+        if (useParsable) sb.AppendLine(resources.Parsable.Value);
+        if (useEfValueConverter) sb.AppendLine(resources.EfValueConverter.Value);
+        if (useDapperTypeHandler) sb.AppendLine(resources.DapperTypeHandler.Value);
+        if (useTypeConverter) sb.AppendLine(resources.TypeConverter.Value);
+        if (useNewtonsoftJson) sb.AppendLine(resources.Newtonsoft.Value);
+        if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson.Value);
+        if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter.Value);
 
-        sb.Replace("TYPENAME", ctx.Name);
+        if (castOperators.IsSet(StronglyCast.ExplicitFrom))
+            sb.AppendLine(EmbeddedSources.ExplicitFrom.Value);
+        if (castOperators.IsSet(StronglyCast.ExplicitTo))
+            sb.AppendLine(EmbeddedSources.ExplicitTo.Value);
+        if (castOperators.IsSet(StronglyCast.ImplicitFrom))
+            sb.AppendLine(EmbeddedSources.ImplicitFrom.Value);
+        if (castOperators.IsSet(StronglyCast.ImplicitTo))
+            sb.AppendLine(EmbeddedSources.ImplicitTo.Value);
+
+        if (resources.IsNumeric &&
+            ctx.Config.Math is not (StronglyMath.None or StronglyMath.Default))
+        {
+            var math = ctx.Config.Math;
+            sb.AppendLine(EmbeddedSources.MathConst.Value);
+            if (math.IsSet(StronglyMath.Addition))
+                sb.AppendLine(EmbeddedSources.MathAddition.Value);
+            if (math.IsSet(StronglyMath.Subtraction))
+                sb.AppendLine(EmbeddedSources.MathSubtraction.Value);
+            if (math.IsSet(StronglyMath.Division))
+                sb.AppendLine(EmbeddedSources.MathDivision.Value);
+            if (math.IsSet(StronglyMath.Multiplication))
+                sb.AppendLine(EmbeddedSources.MathMultiplication.Value);
+            if (math.IsSet(StronglyMath.Negation))
+                sb.AppendLine(EmbeddedSources.MathNegation.Value);
+            if (math.IsSet(StronglyMath.Compare))
+                sb.AppendLine(EmbeddedSources.MathCompare.Value);
+        }
+
+        sb.Replace(EmbeddedSources.ToStringKey,
+            resources.TemplateVars.TryGetValue(EmbeddedSources.ToStringKey, out var toStr)
+                ? toStr
+                : EmbeddedSources.DefaultToString);
+
+        sb.Replace(EmbeddedSources.CtorKey,
+            resources.TemplateVars.TryGetValue(EmbeddedSources.CtorKey, out var ctorInit)
+                ? ctorInit
+                : EmbeddedSources.DefaultCtor);
+
+        foreach (var templateVar in resources.TemplateVars)
+            sb.Replace(templateVar.Key, templateVar.Value);
+
+        sb.Replace("BASE_TYPENAME", resources.InternalType)
+            .Replace("TYPENAME", ctx.Name)
+            .Replace("[?]", resources.NullableEnable ? "?" : string.Empty)
+            .Replace("[GET_HASH_CODE]",
+                resources.NullableEnable ? "Value?.GetHashCode() ?? 0" : "Value.GetHashCode()");
 
         sb.AppendLine(@"    }");
 

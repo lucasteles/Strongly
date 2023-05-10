@@ -7,8 +7,6 @@ static class Constants
 
 // TODO: types
 /*
-Double
-Float
 Byte
 Short
 TimeSpan

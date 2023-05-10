@@ -21,5 +21,7 @@ namespace Strongly
         MassTransitNewId,
         BigInteger,
         Decimal,
+        Double,
+        Float,
     }
 }

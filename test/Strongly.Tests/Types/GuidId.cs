@@ -72,3 +72,13 @@ public partial struct ComparableGuidId
 
 [Strongly(StronglyType.Guid)]
 public partial record struct RecordGuidId1;
+
+[Strongly(StronglyType.Guid, cast: StronglyCast.Implicit)]
+public partial struct ImplicitGuid
+{
+}
+
+[Strongly(StronglyType.Guid, cast: StronglyCast.Explicit)]
+public partial struct ExplicitGuid
+{
+}
