@@ -118,15 +118,16 @@ static class SourceGenerationHelper
         if (useTypeConverter) sb.AppendLine(EmbeddedSources.TypeConverterAttributeSource);
         if (useSchemaFilter) sb.AppendLine(EmbeddedSources.SwaggerSchemaFilterAttributeSource);
 
+        var baseDef = EmbeddedSources.BaseTypeDef + resources.Base;
         if (ctx.IsRecord)
         {
-            var ctor = resources.Base.Split('\n')
+            var ctor = baseDef.Split('\n')
                 .First(x => x.Trim().StartsWith("public TYPENAME("))
                 .Trim().Split('(', ')')[1];
             sb.Append($"readonly partial record struct TYPENAME({ctor}): INTERFACES {{ \n ");
         }
         else
-            sb.Append(resources.Base);
+            sb.Append(baseDef);
 
         ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable);
 
@@ -142,9 +143,22 @@ static class SourceGenerationHelper
         foreach (var templateVar in resources.TemplateVars)
             sb.Replace(templateVar.Key, resources.Customizations[templateVar.Value]);
 
+        sb.Replace(EmbeddedSources.ToStringKey,
+            resources.Customizations.TryGetValue(EmbeddedSources.ToStringKey, out var toStr)
+                ? toStr
+                : EmbeddedSources.DefaultToString);
+
+        sb.Replace(EmbeddedSources.CtorKey,
+            resources.Customizations.TryGetValue(EmbeddedSources.CtorKey, out var ctorInit)
+                ? ctorInit
+                : EmbeddedSources.DefaultCtor);
+
         sb.Replace("BASE_TYPENAME", resources.InternalType)
             .Replace("TYPENAME", ctx.Name)
-            .Replace("[?]", resources.NullableEnable ? "?" : string.Empty);
+            .Replace("[?]", resources.NullableEnable ? "?" : string.Empty)
+            .Replace("[GET_HASH_CODE]",
+                resources.NullableEnable ? "Value?.GetHashCode() ?? 0" : "Value.GetHashCode()");
+
 
         sb.AppendLine(@"    }");
 
