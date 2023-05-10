@@ -11,9 +11,27 @@ static class SourceGenerationHelper
     {
         var resources = ctx.Config.BackingType switch
         {
-            StronglyType.Guid => EmbeddedSources.GuidResources,
-            StronglyType.SequentialGuid => EmbeddedSources.SequentialGuidResources,
-            StronglyType.GuidComb => EmbeddedSources.GuidComb,
+            StronglyType.Guid => EmbeddedSources.GuidResources with
+            {
+                TemplateVars = new()
+                {
+                    ["[NEW_METHOD]"] = "NEW_DEFAULT",
+                },
+            },
+            StronglyType.SequentialGuid => EmbeddedSources.GuidResources with
+            {
+                TemplateVars = new()
+                {
+                    ["[NEW_METHOD]"] = "NEW_SEQUENTIAL",
+                },
+            },
+            StronglyType.GuidComb => EmbeddedSources.GuidResources with
+            {
+                TemplateVars = new()
+                {
+                    ["[NEW_METHOD]"] = "NEW_COMB",
+                },
+            },
             StronglyType.Int => EmbeddedSources.IntResources,
             StronglyType.Long => EmbeddedSources.LongResources,
             StronglyType.Decimal => EmbeddedSources.DecimalResources,
@@ -121,7 +139,12 @@ static class SourceGenerationHelper
         if (useSystemTextJson) sb.AppendLine(resources.SystemTextJson);
         if (useSchemaFilter) sb.AppendLine(resources.SwaggerSchemaFilter);
 
-        sb.Replace("TYPENAME", ctx.Name);
+        foreach (var templateVar in resources.TemplateVars)
+            sb.Replace(templateVar.Key, resources.Customizations[templateVar.Value]);
+
+        sb.Replace("BASE_TYPENAME", resources.InternalType)
+            .Replace("TYPENAME", ctx.Name)
+            .Replace("[?]", resources.NullableEnable ? "?" : string.Empty);
 
         sb.AppendLine(@"    }");
 

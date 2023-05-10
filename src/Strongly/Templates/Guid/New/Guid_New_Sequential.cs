@@ -1,0 +1,1 @@
+﻿    public static TYPENAME New() => new TYPENAME(MassTransit.NewId.NextSequentialGuid());
