@@ -84,6 +84,7 @@ static class SourceGenerationHelper
 
         var implementations = ctx.Config.Implementations;
         var useParsable = implementations.IsSet(StronglyImplementations.Parsable);
+        var useIFormattable = implementations.IsSet(StronglyImplementations.IFormattable);
         const bool useIParsable = false;
         var useIEquatable =
             !ctx.IsRecord && implementations.IsSet(StronglyImplementations.IEquatable);
@@ -137,9 +138,10 @@ static class SourceGenerationHelper
         else
             sb.Append(baseDef);
 
-        ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable);
+        ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable, useIFormattable);
 
         if (useIComparable) sb.AppendLine(resources.Comparable.Value);
+        if (useIFormattable) sb.AppendLine(resources.Formattable.Value);
         if (useParsable) sb.AppendLine(resources.Parsable.Value);
         if (useEfValueConverter) sb.AppendLine(resources.EfValueConverter.Value);
         if (useDapperTypeHandler) sb.AppendLine(resources.DapperTypeHandler.Value);
@@ -207,13 +209,15 @@ static class SourceGenerationHelper
     static void ReplaceInterfaces(StringBuilder sb,
         bool useIEquatable,
         bool useIComparable,
-        bool useIParseable
+        bool useIParseable,
+        bool useIFormattable
     )
     {
         var interfaces = new List<string>();
         if (useIComparable) interfaces.Add("System.IComparable<TYPENAME>");
         if (useIEquatable) interfaces.Add("System.IEquatable<TYPENAME>");
         if (useIParseable) interfaces.Add("System.IParsable<TYPENAME>");
+        if (useIFormattable) interfaces.Add("System.IFormattable");
 
         if (interfaces.Count > 0)
             sb.Replace("INTERFACES", string.Join(", ", interfaces));

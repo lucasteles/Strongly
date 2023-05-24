@@ -16,7 +16,7 @@ namespace Strongly
         /// <summary>
         /// Use the default implementations for the strong type.
         /// This will be the value provided in the <see cref="StronglyDefaultsAttribute"/>, which falls back to
-        /// <see cref="Parsable"/>, <see cref="IEquatable"/> and <see cref="IComparable" />
+        /// <see cref="Parsable"/>, <see cref="IEquatable"/>, <see cref="IComparable" /> and <see cref="IFormattable"/>,
         /// </summary>
         Default = 1,
 
@@ -25,7 +25,6 @@ namespace Strongly
         /// Implement the Parse/TryParse /> interface
         /// </summary>
         Parsable = 2,
-
 
         // ReSharper disable once InconsistentNaming
         /// <summary>
@@ -38,5 +37,11 @@ namespace Strongly
         /// Implement the <see cref="IComparable{T}"/> interface
         /// </summary>
         IComparable = 8,
+
+        // ReSharper disable once InconsistentNaming
+        /// <summary>
+        /// Implement the <see cref="IFormattable"/> interface
+        /// </summary>
+        IFormattable = 16,
     }
 }

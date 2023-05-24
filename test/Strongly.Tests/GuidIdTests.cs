@@ -457,4 +457,14 @@ public class GuidIdTests
         Assert.Equal(value, typedValue.Value);
         Assert.Equal(value, valueBack);
     }
+
+    [Fact]
+    public void ShouldBeFormattable()
+    {
+        var id = FormattableGuidId.New();
+        IFormattable fmtId = id;
+        IFormattable fmtValue = id.Value;
+
+        Assert.Equal(fmtId.ToString(), fmtValue.ToString());
+    }
 }

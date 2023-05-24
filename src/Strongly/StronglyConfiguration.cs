@@ -23,6 +23,7 @@ readonly record struct StronglyConfiguration(
         Implementations: StronglyImplementations.Parsable
                          | StronglyImplementations.IEquatable
                          | StronglyImplementations.IComparable
+                         | StronglyImplementations.IFormattable
     );
 
     /// <summary>
