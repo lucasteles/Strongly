@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Strongly.Diagnostics;
 
 namespace Strongly;
 
@@ -15,14 +13,14 @@ static class Parser
     const string StronglyDefaultsAttribute = "Strongly.StronglyDefaultsAttribute";
 
     public static bool IsStructTargetForGeneration(SyntaxNode node)
-        => node is TypeDeclarationSyntax {AttributeLists.Count: > 0} t
+        => node is TypeDeclarationSyntax { AttributeLists.Count: > 0 } t
            && t.Modifiers.Any(SyntaxKind.PartialKeyword)
            &&
            (node.IsKind(SyntaxKind.StructDeclaration) ||
             node.IsKind(SyntaxKind.RecordStructDeclaration));
 
     public static bool IsAttributeTargetForGeneration(SyntaxNode node)
-        => node is AttributeListSyntax {Target.Identifier: var id}
+        => node is AttributeListSyntax { Target.Identifier: var id }
            && id.IsKind(SyntaxKind.AssemblyKeyword);
 
     public static TypeDeclarationSyntax? GetStructSemanticTargetForGeneration(
@@ -157,8 +155,7 @@ static class Parser
                 break;
 
             var location = attribute.ApplicationSyntaxReference?.GetSyntax(ct).GetLocation();
-            config = new StronglyConfiguration(
-                backingType, converter, implementations, cast, math, location);
+            config = new(backingType, converter, implementations, cast, math, location);
             break;
         }
 
@@ -167,10 +164,16 @@ static class Parser
         var nameSpace = GetNameSpace(declarationSyntax);
         var parentClass = GetParentClasses(declarationSyntax);
         var isRecord = declarationSyntax.Keyword.IsKind(SyntaxKind.RecordKeyword);
-        var name = structSymbol.Name;
+        var constructor = GetConstructor(structSymbol).ToArray();
 
-        return new(Name: name, NameSpace: nameSpace,
-            Config: config.Value, Parent: parentClass, IsRecord: isRecord);
+        return new(
+            Name: structSymbol.Name,
+            NameSpace: nameSpace,
+            Config: config.Value,
+            Parent: parentClass,
+            IsRecord: isRecord,
+            Constructors: constructor
+        );
     }
 
     public static StronglyConfiguration? GetDefaults(Compilation compilation, CancellationToken ct)
@@ -292,7 +295,7 @@ static class Parser
 
         while (parentIdClass is not null && IsAllowedKind(parentIdClass.Kind()))
         {
-            parentClass = new ParentClass(
+            parentClass = new(
                 Keyword: parentIdClass.Keyword.ValueText,
                 Name: parentIdClass.Identifier.ToString() + parentIdClass.TypeParameterList,
                 Constraints: parentIdClass.ConstraintClauses.ToString(),
@@ -308,13 +311,27 @@ static class Parser
             or SyntaxKind.StructDeclaration
             or SyntaxKind.RecordDeclaration;
     }
+
+
+    static IEnumerable<ConstructorInfo> GetConstructor(INamedTypeSymbol typeSymbol)
+    {
+        foreach (var ctor in typeSymbol.Constructors)
+        {
+            if (ctor.Parameters.Length is not 1) continue;
+            yield return new(ctor.Parameters[0].Type.ToDisplayString());
+        }
+    }
 }
 
 record ParentClass(string Keyword, string Name, string Constraints, ParentClass? Child);
 
-record StronglyContext(string Name,
+readonly record struct ConstructorInfo(string ArgumentType);
+
+record StronglyContext(
+    string Name,
     string NameSpace,
     StronglyConfiguration Config,
     ParentClass? Parent,
-    bool IsRecord
+    bool IsRecord,
+    ConstructorInfo[] Constructors
 );

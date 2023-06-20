@@ -58,8 +58,10 @@ public class StronglyGenerator : IIncrementalGenerator
                     if (context is null) return null;
                     return context with
                     {
-                        Config = StronglyConfiguration.Combine(context.Config,
-                            globalDefaults.Single())
+                        Config = StronglyConfiguration.Combine(
+                            context.Config,
+                            globalDefaults.Single()
+                        ),
                     };
                 })
                 .Where(static m => m is not null)

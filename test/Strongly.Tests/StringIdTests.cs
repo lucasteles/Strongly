@@ -67,7 +67,7 @@ public class StringIdTests
         var foo = new StringId("Value");
 
         //Assert.NotEqual(bar, foo); // does not compile
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
 
@@ -332,9 +332,7 @@ public class StringIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public ConventionsDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public ConventionsDbContext(DbContextOptions options) : base(options) { }
 
         protected override void ConfigureConventions(
             ModelConfigurationBuilder configurationBuilder)
@@ -386,9 +384,7 @@ public class StringIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public TestDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public TestDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -401,6 +397,13 @@ public class StringIdTests
                         .ValueGeneratedNever();
                 });
         }
+    }
+
+    [Fact]
+    public void UseCustomConstructor()
+    {
+        var result = new CtorStringId("ABCDEFGH123");
+        Assert.Equal("abcdefgh123", result.Value);
     }
 
     public class TestEntity

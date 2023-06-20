@@ -93,7 +93,7 @@ static class SourceGenerationHelper
 
         var parentsCount = 0;
 
-        sb ??= new StringBuilder();
+        sb ??= new();
         sb.Append(resources.Header.Value);
 
         if (resources.NullableEnable) sb.AppendLine("#nullable enable");
@@ -127,7 +127,10 @@ static class SourceGenerationHelper
         if (useTypeConverter) sb.AppendLine(EmbeddedSources.TypeConverterAttributeSource);
         if (useSchemaFilter) sb.AppendLine(EmbeddedSources.SwaggerSchemaFilterAttributeSource);
 
+        var hasCtor = ctx.Constructors.Any(c => c.ArgumentType == resources.InternalType);
         var baseDef = EmbeddedSources.BaseTypeDef.Value + resources.Base.Value;
+        baseDef = baseDef.Replace("[CTOR]", hasCtor ? string.Empty : EmbeddedSources.Ctor.Value);
+
         if (ctx.IsRecord)
         {
             var ctor = baseDef.Split('\n')
@@ -139,6 +142,7 @@ static class SourceGenerationHelper
             sb.Append(baseDef);
 
         ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable, useIFormattable);
+
 
         if (useIComparable) sb.AppendLine(resources.Comparable.Value);
         if (useIFormattable) sb.AppendLine(resources.Formattable.Value);

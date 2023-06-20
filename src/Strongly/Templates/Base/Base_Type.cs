@@ -2,10 +2,8 @@
 {
     public BASE_TYPENAME Value { get; }
 
-    public TYPENAME(BASE_TYPENAME value)
-    {
-        [CTOR_VALUE]
-    }
+[CTOR]
+    
     public override int GetHashCode() => [GET_HASH_CODE];
     public static bool operator ==(TYPENAME a, TYPENAME b) => a.Equals(b);
     public static bool operator !=(TYPENAME a, TYPENAME b) => !(a == b);
