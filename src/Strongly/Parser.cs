@@ -256,7 +256,12 @@ static class Parser
                 break;
 
             var location = attribute.ApplicationSyntaxReference?.GetSyntax(ct).GetLocation();
-            return new StronglyConfiguration(backingType, converter, implementations, cast, math,
+
+            return new StronglyConfiguration(
+                backingType,
+                converter,
+                implementations,
+                cast, math,
                 location);
         }
 
@@ -311,7 +316,6 @@ static class Parser
             or SyntaxKind.StructDeclaration
             or SyntaxKind.RecordDeclaration;
     }
-
 
     static IEnumerable<ConstructorInfo> GetConstructor(INamedTypeSymbol typeSymbol)
     {

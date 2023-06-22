@@ -62,7 +62,7 @@ public class MassTransitNewIdTests
         var foo = NewIdId1.New();
 
         //Assert.NotEqual(bar, foo); // does not compile
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class MassTransitNewIdTests
         var bar = new NewIdId2();
 
         //Assert.NotEqual(bar, foo); // does not compile
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
     [Fact]
@@ -175,8 +175,8 @@ public class MassTransitNewIdTests
     public void CanSerializeToNewId_WithBothJsonConverters()
     {
         var foo = BothJsonNewIdId.New();
-
         var serializedFoo1 = NewtonsoftJsonSerializer.SerializeObject(foo);
+
         var serializedNewId1 =
             NewtonsoftJsonSerializer.SerializeObject(foo.Value.ToGuid().ToString());
 
@@ -349,9 +349,7 @@ public class MassTransitNewIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public ConventionsDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public ConventionsDbContext(DbContextOptions options) : base(options) { }
 
         protected override void ConfigureConventions(
             ModelConfigurationBuilder configurationBuilder)
@@ -403,9 +401,7 @@ public class MassTransitNewIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public TestDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public TestDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

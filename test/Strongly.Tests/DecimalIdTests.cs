@@ -112,7 +112,7 @@ public class DecimalIdTests
     [Fact]
     public void CanSerializeToNullableInt_WithNewtonsoftJsonProvider()
     {
-        var entity = new EntityWithNullableId {Id = null};
+        var entity = new EntityWithNullableId { Id = null };
 
         var json = NewtonsoftJsonSerializer.SerializeObject(entity);
         var deserialize =
@@ -223,7 +223,7 @@ public class DecimalIdTests
             .UseSqlite(connection)
             .Options;
 
-        var original = new TestEntity {Id = new EfCoreDecimalId(123)};
+        var original = new TestEntity { Id = new EfCoreDecimalId(123) };
         using (var context = new TestDbContext(options))
         {
             context.Database.EnsureCreated();
@@ -331,7 +331,7 @@ public class DecimalIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity {Id = new EfCoreDecimalId(123)});
+                new TestEntity { Id = new EfCoreDecimalId(123) });
             context.SaveChanges();
         }
 
@@ -346,9 +346,7 @@ public class DecimalIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public ConventionsDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public ConventionsDbContext(DbContextOptions options) : base(options) { }
 
         protected override void ConfigureConventions(
             ModelConfigurationBuilder configurationBuilder)
@@ -400,9 +398,7 @@ public class DecimalIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public TestDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public TestDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Strongly;
@@ -85,7 +87,7 @@ static class SourceGenerationHelper
         var implementations = ctx.Config.Implementations;
         var useParsable = implementations.IsSet(StronglyImplementations.Parsable);
         var useIFormattable = implementations.IsSet(StronglyImplementations.IFormattable);
-        const bool useIParsable = false;
+        var useIParsable = implementations.IsSet(StronglyImplementations.Parsable);
         var useIEquatable =
             !ctx.IsRecord && implementations.IsSet(StronglyImplementations.IEquatable);
         var useIComparable =
@@ -128,20 +130,23 @@ static class SourceGenerationHelper
 
         var hasCtor = ctx.Constructors.Any(c => c.ArgumentType == resources.InternalType);
         var baseDef = EmbeddedSources.BaseTypeDef.Value + resources.Base.Value;
-        baseDef = baseDef.Replace("[CTOR]", hasCtor ? string.Empty : EmbeddedSources.Ctor.Value);
-
         if (ctx.IsRecord)
         {
-            var ctor = baseDef.Split('\n')
-                .First(x => x.Trim().StartsWith("public TYPENAME("))
-                .Trim().Split('(', ')')[1];
-            sb.Append($"readonly partial record struct TYPENAME({ctor}): INTERFACES {{ \n ");
+            var ctorIndex =
+                baseDef.IndexOf(EmbeddedSources.CtorKey, StringComparison.InvariantCulture);
+
+            baseDef = baseDef
+                          .Substring(0, ctorIndex + EmbeddedSources.CtorKey.Length)
+                          .Replace("readonly partial struct", "readonly partial record struct")
+                      + Environment.NewLine;
         }
-        else
-            sb.Append(baseDef);
+
+        baseDef = baseDef.Replace(EmbeddedSources.CtorKey,
+            hasCtor ? string.Empty : EmbeddedSources.Ctor.Value);
+
+        sb.Append(baseDef);
 
         ReplaceInterfaces(sb, useIEquatable, useIComparable, useIParsable, useIFormattable);
-
 
         if (useIComparable) sb.AppendLine(resources.Comparable.Value);
         if (useIFormattable) sb.AppendLine(resources.Formattable.Value);
@@ -186,8 +191,8 @@ static class SourceGenerationHelper
                 ? toStr
                 : EmbeddedSources.DefaultToString);
 
-        sb.Replace(EmbeddedSources.CtorKey,
-            resources.TemplateVars.TryGetValue(EmbeddedSources.CtorKey, out var ctorInit)
+        sb.Replace(EmbeddedSources.CtorValueKey,
+            resources.TemplateVars.TryGetValue(EmbeddedSources.CtorValueKey, out var ctorInit)
                 ? ctorInit
                 : EmbeddedSources.DefaultCtor);
 
@@ -219,8 +224,15 @@ static class SourceGenerationHelper
         var interfaces = new List<string>();
         if (useIComparable) interfaces.Add("System.IComparable<TYPENAME>");
         if (useIEquatable) interfaces.Add("System.IEquatable<TYPENAME>");
-        if (useIParseable) interfaces.Add("System.IParsable<TYPENAME>");
         if (useIFormattable) interfaces.Add("System.IFormattable");
+
+        var interfacesNet7 = new List<string>();
+        if (useIParseable) interfacesNet7.Add("System.IParsable<TYPENAME>");
+
+        if (interfaces.Count > 0 || interfacesNet7.Count > 0)
+            sb.Replace("INTERFACES_NET7", string.Join(", ", interfaces.Concat(interfacesNet7)));
+        else
+            sb.Replace(": INTERFACES_NET7", string.Empty);
 
         if (interfaces.Count > 0)
             sb.Replace("INTERFACES", string.Join(", ", interfaces));
