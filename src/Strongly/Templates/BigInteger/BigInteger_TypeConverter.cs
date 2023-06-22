@@ -1,12 +1,12 @@
 ﻿
 class TYPENAMETypeConverter : System.ComponentModel.TypeConverter
 {
-    public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType)
+    public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type sourceType)
     {
         return sourceType == typeof(System.Numerics.BigInteger) || sourceType == typeof(long) || sourceType == typeof(byte) || sourceType == typeof(ulong) || sourceType == typeof(int) || sourceType == typeof(uint) || sourceType == typeof(short) || sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
     }
 
-    public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+    public override object? ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
     {
         return value switch
         {
@@ -22,12 +22,12 @@ class TYPENAMETypeConverter : System.ComponentModel.TypeConverter
         };
     }
 
-    public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType)
+    public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType)
     {
         return sourceType == typeof(System.Numerics.BigInteger) || sourceType == typeof(string) || base.CanConvertTo(context, sourceType);
     }
 
-    public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType)
+    public override object? ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type destinationType)
     {
         if (value is TYPENAME idValue)
         {

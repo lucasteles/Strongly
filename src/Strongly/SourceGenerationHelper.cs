@@ -95,8 +95,7 @@ static class SourceGenerationHelper
 
         sb ??= new();
         sb.Append(resources.Header.Value);
-
-        if (resources.NullableEnable) sb.AppendLine("#nullable enable");
+        sb.AppendLine("#nullable enable");
 
         var hasNamespace = !string.IsNullOrEmpty(ctx.NameSpace);
         if (hasNamespace)

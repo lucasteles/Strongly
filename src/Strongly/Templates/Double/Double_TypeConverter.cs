@@ -1,12 +1,12 @@
 ﻿
         class TYPENAMETypeConverter : System.ComponentModel.TypeConverter
         {
-            public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType)
+            public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type sourceType)
             {
                 return  sourceType == typeof(double)  || sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
             }
 
-            public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+            public override object? ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
             {
                 return value switch
                 {
@@ -16,12 +16,12 @@
                 };
             }
 
-            public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType)
+            public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType)
             {
                 return sourceType == typeof(double) || sourceType == typeof(string) || base.CanConvertTo(context, sourceType);
             }
 
-            public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType)
+            public override object? ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type destinationType)
             {
                 if (value is TYPENAME idValue)
                 {

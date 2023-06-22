@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <!--                <TargetFrameworks>net6.0;net7.0</TargetFrameworks>-->
         <IsPackable>false</IsPackable>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <InvariantGlobalization>true</InvariantGlobalization>
@@ -9,24 +10,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Strongly\Strongly.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\..\src\Strongly.Attributes\Strongly.Attributes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+        <ProjectReference Include="..\..\src\Strongly\Strongly.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\..\src\Strongly.Attributes\Strongly.Attributes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0-*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-*" />
-        <PackageReference Include="System.Text.Json" Version="6.0.0-*" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
-        <PackageReference Include="NewId" Version="4.0.0-develop.44" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-        <PackageReference Include="Dapper" Version="2.0.90" />
-        <PackageReference Include="xunit" Version="2.4.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0-*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-*"/>
+        <PackageReference Include="System.Text.Json" Version="6.0.0-*"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0"/>
+        <PackageReference Include="NewId" Version="4.0.0-develop.44"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0"/>
+        <PackageReference Include="Dapper" Version="2.0.90"/>
+        <PackageReference Include="xunit" Version="2.4.1"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>

@@ -4,7 +4,7 @@ public static TYPENAME Parse(string value) =>
 
 public static bool TryParse(
     [System.Diagnostics.CodeAnalysis.NotNullWhen(true)]string value, 
-    [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)]out TYPENAME result)
+    out TYPENAME result)
 {
     if (string.IsNullOrWhiteSpace(value))
     {

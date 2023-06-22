@@ -14,13 +14,13 @@ class TYPENAMENewtonsoftJsonConverter : Newtonsoft.Json.JsonConverter
         }
         else
         {
-            var id = (TYPENAME)value;
-            serializer.Serialize(writer, id.Value);
+            var id = value as TYPENAME?;
+            serializer.Serialize(writer, id?.Value);
         }
     }
 
-    public override object ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object? existingValue, Newtonsoft.Json.JsonSerializer serializer)
+    public override object? ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object? existingValue, Newtonsoft.Json.JsonSerializer serializer)
     {
-        return new TYPENAME(serializer.Deserialize<string>(reader));
+        return new TYPENAME(serializer.Deserialize<string>(reader)!);
     }
 }

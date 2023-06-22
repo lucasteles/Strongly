@@ -5,7 +5,7 @@
     public static bool TryParse(
         [System.Diagnostics.CodeAnalysis.NotNullWhen(true)]string value, 
         System.IFormatProvider? provider, 
-        [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)]out TYPENAME result)
+        out TYPENAME result)
     {
         if (decimal.TryParse(
                 value, 
