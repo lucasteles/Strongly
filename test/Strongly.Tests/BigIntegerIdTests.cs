@@ -125,7 +125,7 @@ public class BigIntegerIdTests
     [Fact]
     public void CanSerializeToNullableInt_WithNewtonsoftJsonProvider()
     {
-        var entity = new EntityWithNullableId {Id = null};
+        var entity = new EntityWithNullableId { Id = null };
 
         var json = NewtonsoftJsonSerializer.SerializeObject(entity);
         var deserialize =
@@ -206,7 +206,7 @@ public class BigIntegerIdTests
             .UseSqlite(connection)
             .Options;
 
-        var original = new TestEntity {Id = new EfCoreBigIntegerId(BigN)};
+        var original = new TestEntity { Id = new EfCoreBigIntegerId(BigN) };
         using (var context = new TestDbContext(options))
         {
             context.Database.EnsureCreated();
@@ -343,7 +343,7 @@ public class BigIntegerIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity {Id = new EfCoreBigIntegerId(BigN)});
+                new TestEntity { Id = new EfCoreBigIntegerId(BigN) });
             context.SaveChanges();
         }
 
@@ -358,9 +358,7 @@ public class BigIntegerIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public ConventionsDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public ConventionsDbContext(DbContextOptions options) : base(options) { }
 
         protected override void ConfigureConventions(
             ModelConfigurationBuilder configurationBuilder)
@@ -412,9 +410,7 @@ public class BigIntegerIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public TestDbContext(DbContextOptions options) : base(options)
-        {
-        }
+        public TestDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
