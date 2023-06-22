@@ -1,2 +1,2 @@
-﻿    public string ToString(string[?] format, System.IFormatProvider[?] formatProvider) =>
+﻿    public string ToString(string? format, System.IFormatProvider? formatProvider) =>
         Value.ToString(formatProvider);
