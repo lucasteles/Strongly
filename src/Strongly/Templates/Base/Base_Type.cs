@@ -1,4 +1,6 @@
-﻿readonly partial struct TYPENAME : INTERFACES
+﻿
+[System.Diagnostics.DebuggerDisplay("{Value}", Type = "TYPENAME")]
+readonly partial struct TYPENAME : INTERFACES
 {
     public BASE_TYPENAME Value { get; }
 
