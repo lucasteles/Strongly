@@ -48,7 +48,10 @@ static class EmbeddedSources
     internal static readonly Lazy<string> MathAddition = LoadEmbeddedResource("Base.Math_Addition");
     internal static readonly Lazy<string> MathDivision = LoadEmbeddedResource("Base.Math_Division");
     internal static readonly Lazy<string> MathNegation = LoadEmbeddedResource("Base.Math_Negation");
-    internal static readonly Lazy<string> MathCompare = LoadEmbeddedResource("Base.Math_Compare");
+
+
+    internal static readonly Lazy<string> OperatorsCompare =
+        LoadEmbeddedResource("Base.Operators_Compare");
 
     internal static readonly Lazy<string> MathSubtraction =
         LoadEmbeddedResource("Base.Math_Subtraction");
@@ -80,7 +83,8 @@ static class EmbeddedSources
         DefaultIComparable,
         LoadEmbeddedResource("Guid.Guid_SwaggerSchemaFilter"),
         LoadEmbeddedResource("Guid.Guid_Parsable"),
-        DefaultIFormattable
+        DefaultIFormattable,
+        LoadEmbeddedResource("Guid.Guid_OperatorsCompare")
     )
     {
         Customizations =
@@ -319,7 +323,9 @@ static class EmbeddedSources
         Lazy<string> Comparable,
         Lazy<string> SwaggerSchemaFilter,
         Lazy<string> Parsable,
-        Lazy<string> Formattable)
+        Lazy<string> Formattable,
+        Lazy<string>? CompareOperators = null
+    )
     {
         public bool IsNumeric { get; init; } = false;
         public bool NullableEnable { get; init; } = false;

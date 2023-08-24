@@ -147,7 +147,7 @@ public class GuidIdTests
     [Fact]
     public void CanSerializeToNullableInt_WithNewtonsoftJsonProvider()
     {
-        var entity = new EntityWithNullableId { Id = null };
+        var entity = new EntityWithNullableId {Id = null};
 
         var json = NewtonsoftJsonSerializer.SerializeObject(entity);
         var deserialize =
@@ -237,7 +237,7 @@ public class GuidIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity { Id = EfCoreGuidId.New() });
+                new TestEntity {Id = EfCoreGuidId.New()});
             context.SaveChanges();
         }
 
@@ -329,7 +329,7 @@ public class GuidIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity { Id = EfCoreGuidId.New() });
+                new TestEntity {Id = EfCoreGuidId.New()});
             context.SaveChanges();
         }
 
@@ -344,7 +344,9 @@ public class GuidIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public ConventionsDbContext(DbContextOptions options) : base(options) { }
+        public ConventionsDbContext(DbContextOptions options) : base(options)
+        {
+        }
 
         protected override void ConfigureConventions(
             ModelConfigurationBuilder configurationBuilder)
@@ -397,7 +399,9 @@ public class GuidIdTests
     {
         public DbSet<TestEntity> Entities { get; set; }
 
-        public TestDbContext(DbContextOptions options) : base(options) { }
+        public TestDbContext(DbContextOptions options) : base(options)
+        {
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

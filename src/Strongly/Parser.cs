@@ -13,14 +13,14 @@ static class Parser
     const string StronglyDefaultsAttribute = "Strongly.StronglyDefaultsAttribute";
 
     public static bool IsStructTargetForGeneration(SyntaxNode node)
-        => node is TypeDeclarationSyntax { AttributeLists.Count: > 0 } t
+        => node is TypeDeclarationSyntax {AttributeLists.Count: > 0} t
            && t.Modifiers.Any(SyntaxKind.PartialKeyword)
            &&
            (node.IsKind(SyntaxKind.StructDeclaration) ||
             node.IsKind(SyntaxKind.RecordStructDeclaration));
 
     public static bool IsAttributeTargetForGeneration(SyntaxNode node)
-        => node is AttributeListSyntax { Target.Identifier: var id }
+        => node is AttributeListSyntax {Target.Identifier: var id}
            && id.IsKind(SyntaxKind.AssemblyKeyword);
 
     public static TypeDeclarationSyntax? GetStructSemanticTargetForGeneration(
@@ -261,8 +261,10 @@ static class Parser
                 backingType,
                 converter,
                 implementations,
-                cast, math,
-                location);
+                cast,
+                math,
+                location
+            );
         }
 
         return null;

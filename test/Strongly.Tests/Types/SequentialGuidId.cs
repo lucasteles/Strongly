@@ -77,3 +77,12 @@ public partial struct EquatableSequentialGuidId
 public partial struct ComparableSequentialGuidId
 {
 }
+
+[Strongly(
+    StronglyType.SequentialGuid,
+    math: StronglyMath.Compare,
+    implementations: StronglyImplementations.IComparable
+)]
+public partial struct ComparableGuid
+{
+}

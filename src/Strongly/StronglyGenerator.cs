@@ -60,7 +60,7 @@ public class StronglyGenerator : IIncrementalGenerator
                     {
                         Config = StronglyConfiguration.Combine(
                             context.Config,
-                            globalDefaults.Single()
+                            globalDefaults.SingleOrDefault()
                         ),
                     };
                 })

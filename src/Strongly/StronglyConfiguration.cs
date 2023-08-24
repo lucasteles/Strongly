@@ -40,7 +40,7 @@ readonly record struct StronglyConfiguration(
             (StronglyType.Default, null) => Defaults.BackingType,
             (StronglyType.Default, StronglyType.Default) => Defaults.BackingType,
             (StronglyType.Default, var globalDefault) => globalDefault.Value,
-            var (specificValue, _) => specificValue
+            var (specificValue, _) => specificValue,
         };
 
         var converter = (attributeValues.Converters, globalValues?.Converters) switch
@@ -84,6 +84,7 @@ readonly record struct StronglyConfiguration(
             converter,
             implementations,
             casts,
-            math);
+            math
+        );
     }
 }

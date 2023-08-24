@@ -167,10 +167,10 @@ static class SourceGenerationHelper
         if (castOperators.IsSet(StronglyCast.ImplicitTo))
             sb.AppendLine(EmbeddedSources.ImplicitTo.Value);
 
+        var math = ctx.Config.Math;
         if (resources.IsNumeric &&
             ctx.Config.Math is not (StronglyMath.None or StronglyMath.Default))
         {
-            var math = ctx.Config.Math;
             sb.AppendLine(EmbeddedSources.MathConst.Value);
             if (math.IsSet(StronglyMath.Addition))
                 sb.AppendLine(EmbeddedSources.MathAddition.Value);
@@ -183,8 +183,11 @@ static class SourceGenerationHelper
             if (math.IsSet(StronglyMath.Negation))
                 sb.AppendLine(EmbeddedSources.MathNegation.Value);
             if (math.IsSet(StronglyMath.Compare))
-                sb.AppendLine(EmbeddedSources.MathCompare.Value);
+                sb.AppendLine(EmbeddedSources.OperatorsCompare.Value);
         }
+        else if (resources.CompareOperators is not null && math.IsSet(StronglyMath.Compare))
+            if (math.IsSet(StronglyMath.Compare))
+                sb.AppendLine(resources.CompareOperators.Value);
 
         sb.Replace(EmbeddedSources.ToStringKey,
             resources.TemplateVars.TryGetValue(EmbeddedSources.ToStringKey, out var toStr)

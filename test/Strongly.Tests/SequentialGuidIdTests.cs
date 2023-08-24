@@ -72,7 +72,7 @@ public class SequentialGuidIdTests
         var foo = SequentialGuidId1.New();
 
         //Assert.NotEqual(bar, foo); // does not compile
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class SequentialGuidIdTests
         var bar = new SequentialGuidId2();
 
         //Assert.NotEqual(bar, foo); // does not compile
-        Assert.NotEqual((object)bar, (object)foo);
+        Assert.NotEqual((object) bar, (object) foo);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class SequentialGuidIdTests
     [Fact]
     public void CanSerializeToNullableInt_WithNewtonsoftJsonProvider()
     {
-        var entity = new EntityWithNullableId { Id = null };
+        var entity = new EntityWithNullableId {Id = null};
 
         var json = NewtonsoftJsonSerializer.SerializeObject(entity);
         var deserialize =
@@ -251,7 +251,7 @@ public class SequentialGuidIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity { Id = EfCoreSequentialGuidId.New() });
+                new TestEntity {Id = EfCoreSequentialGuidId.New()});
             context.SaveChanges();
         }
 
@@ -345,7 +345,7 @@ public class SequentialGuidIdTests
         {
             context.Database.EnsureCreated();
             context.Entities.Add(
-                new TestEntity { Id = EfCoreSequentialGuidId.New() });
+                new TestEntity {Id = EfCoreSequentialGuidId.New()});
             context.SaveChanges();
         }
 
@@ -441,4 +441,18 @@ public class SequentialGuidIdTests
     {
         public NewtonsoftJsonSequentialGuidId? Id { get; set; }
     }
+
+#if NET7_0_OR_GREATER
+    [Fact]
+    public void ComparableOperators()
+    {
+        var value1 = ComparableGuid.New();
+        var value2 = ComparableGuid.New();
+
+        Assert.True(value1 < value2);
+        Assert.True(value1 <= value2);
+        Assert.True(value2 >  value1);
+        Assert.True(value2 >=  value1);
+    }
+#endif
 }
