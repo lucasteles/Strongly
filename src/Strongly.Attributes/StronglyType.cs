@@ -24,5 +24,6 @@ namespace Strongly
         Double,
         Float,
         Short,
+        Byte,
     }
 }
