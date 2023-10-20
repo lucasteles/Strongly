@@ -41,6 +41,7 @@ static class SourceGenerationHelper
             StronglyType.Long => EmbeddedSources.LongResources,
             StronglyType.Short => EmbeddedSources.ShortResources,
             StronglyType.Byte => EmbeddedSources.ByteResources,
+            StronglyType.NativeInt => EmbeddedSources.NativeIntResources,
             StronglyType.Decimal => EmbeddedSources.DecimalResources,
             StronglyType.Double => EmbeddedSources.DoubleResources,
             StronglyType.Float => EmbeddedSources.FloatResources,
@@ -52,7 +53,7 @@ static class SourceGenerationHelper
             _ => throw new ArgumentException("Unknown backing type: " + ctx.Config.BackingType,
                 nameof(ctx.Config.BackingType)),
         };
-
+        
         return CreateStrongValue(ctx, resources, sb);
     }
 
