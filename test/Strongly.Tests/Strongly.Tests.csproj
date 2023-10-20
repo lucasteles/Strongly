@@ -37,4 +37,8 @@
         </PackageReference>
     </ItemGroup>
 
+<!--    <Target Name="Restart build server" BeforeTargets="Build">-->
+<!--        <Message Text="Restarting build server (cache clean)" Importance="High"/>-->
+<!--        <Exec Command="dotnet build-server shutdown"/>-->
+<!--    </Target>-->
 </Project>

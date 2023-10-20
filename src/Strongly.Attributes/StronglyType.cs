@@ -23,5 +23,6 @@ namespace Strongly
         Decimal,
         Double,
         Float,
+        Short,
     }
 }
