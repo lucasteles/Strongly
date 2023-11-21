@@ -437,6 +437,13 @@ public class GuidIdTests
     }
 
     [Fact]
+    public void RecordHaveNewAndEmpty()
+    {
+        _ = RecordGuidId1.New();
+        _ = RecordGuidId1.Empty;
+    }
+
+    [Fact]
     public void ImplicitCasts()
     {
         var value = Guid.NewGuid();

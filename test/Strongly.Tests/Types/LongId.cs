@@ -5,6 +5,11 @@ partial struct LongId
 {
 }
 
+[Strongly(backingType: StronglyType.Long)]
+partial record struct RecordLongId
+{
+}
+
 [Strongly(converters: StronglyConverter.None, backingType: StronglyType.Long)]
 public partial struct NoConverterLongId
 {

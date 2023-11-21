@@ -16,6 +16,13 @@ namespace Strongly.IntegrationTests;
 public class GuidCombIdTests
 {
     [Fact]
+    public void RecordHaveEmptyAndNew()
+    {
+        _ = RecordGuidCombId1.New();
+        _ = RecordGuidCombId1.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = NewId.NextGuid();

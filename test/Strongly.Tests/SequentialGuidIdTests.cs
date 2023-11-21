@@ -16,6 +16,13 @@ namespace Strongly.IntegrationTests;
 public class SequentialGuidIdTests
 {
     [Fact]
+    public void RecordHaveEmptyAndNew()
+    {
+        _ = RecordSequentialGuidId1.New();
+        _ = RecordSequentialGuidId1.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = NewId.NextGuid();

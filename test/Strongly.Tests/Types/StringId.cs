@@ -3,6 +3,9 @@
 [Strongly(backingType: StronglyType.String)]
 partial struct StringId { }
 
+[Strongly(backingType: StronglyType.String)]
+partial record struct RecordStringId { }
+
 [Strongly(converters: StronglyConverter.None, backingType: StronglyType.String)]
 public partial struct NoConvertersStringId { }
 

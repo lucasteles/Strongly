@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class DecimalIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordDecimalId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = 123.789M;

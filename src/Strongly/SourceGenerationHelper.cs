@@ -138,8 +138,16 @@ static class SourceGenerationHelper
             var ctorIndex =
                 baseDef.IndexOf(EmbeddedSources.CtorKey, StringComparison.InvariantCulture);
 
+            var emptyMethodIndex =
+                baseDef.IndexOf("public static readonly TYPENAME Empty =", StringComparison.InvariantCulture);
+
+            var emptyMethod = emptyMethodIndex == -1
+                ? ""
+                : baseDef.Substring(emptyMethodIndex) + Environment.NewLine;
+
             baseDef = baseDef
-                          .Substring(0, ctorIndex + EmbeddedSources.CtorKey.Length)
+                          .Substring(0, ctorIndex + EmbeddedSources.CtorValueKey.Length)
+                          .Insert(ctorIndex, emptyMethod)
                           .Replace("readonly partial struct", "readonly partial record struct")
                       + Environment.NewLine;
         }

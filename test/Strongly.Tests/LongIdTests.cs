@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class LongIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordLongId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = 123L;

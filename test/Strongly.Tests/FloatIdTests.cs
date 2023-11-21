@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class FloatIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordFloatId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = 123.789f;

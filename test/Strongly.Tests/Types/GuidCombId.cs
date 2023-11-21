@@ -1,6 +1,11 @@
 ﻿namespace Strongly.IntegrationTests.Types;
 
 [Strongly(backingType: StronglyType.GuidComb)]
+public partial record struct RecordGuidCombId1
+{
+}
+
+[Strongly(backingType: StronglyType.GuidComb)]
 public partial struct GuidCombId1
 {
 }

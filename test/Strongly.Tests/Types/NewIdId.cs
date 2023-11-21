@@ -4,6 +4,9 @@
 partial struct NewIdId1 { }
 
 [Strongly(backingType: StronglyType.MassTransitNewId)]
+partial record struct RecordNewIdId1 { }
+
+[Strongly(backingType: StronglyType.MassTransitNewId)]
 public partial struct NewIdId2 { }
 
 [Strongly(backingType: StronglyType.MassTransitNewId, converters: StronglyConverter.None)]

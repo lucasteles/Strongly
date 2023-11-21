@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class ByteIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = ByteId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         byte id = 123;
