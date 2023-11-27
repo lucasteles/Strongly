@@ -6,6 +6,11 @@ public partial struct SequentialGuidId1
 }
 
 [Strongly(backingType: StronglyType.SequentialGuid)]
+public partial record struct RecordSequentialGuidId1
+{
+}
+
+[Strongly(backingType: StronglyType.SequentialGuid)]
 public partial struct SequentialGuidId2
 {
 }

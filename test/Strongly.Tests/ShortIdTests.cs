@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class ShortIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordShortId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         short id = 123;

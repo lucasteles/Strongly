@@ -5,6 +5,11 @@ public partial struct ByteId
 {
 }
 
+[Strongly(backingType: StronglyType.Byte)]
+public partial record struct RecordByteId
+{
+}
+
 [Strongly(converters: StronglyConverter.None, backingType: StronglyType.Byte)]
 public partial struct NoConverterByteId
 {

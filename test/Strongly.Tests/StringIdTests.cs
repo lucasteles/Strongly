@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class StringIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordStringId.Empty;
+    }
+
+    [Fact]
     public async Task ThrowsIfTryToCreateWithNull()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(() =>

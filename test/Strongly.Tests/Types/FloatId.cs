@@ -7,6 +7,11 @@ public partial struct FloatId
 {
 }
 
+[Strongly(backingType: StronglyType.Float)]
+public partial record struct RecordFloatId
+{
+}
+
 [Strongly(converters: StronglyConverter.None,
     backingType: StronglyType.Float)]
 public partial struct NoConverterFloatId

@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class NativeIntIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordNativeIntId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         nint id = 123;

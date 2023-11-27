@@ -13,6 +13,13 @@ namespace Strongly.IntegrationTests;
 public class DefaultIdTests
 {
     [Fact]
+    public void RecordHaveEmptyAndNew()
+    {
+        _ = RecordDefaultId1.New();
+        _ = RecordDefaultId1.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = Guid.NewGuid();

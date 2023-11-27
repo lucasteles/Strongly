@@ -5,6 +5,11 @@ partial struct BigIntegerId
 {
 }
 
+[Strongly(backingType: StronglyType.BigInteger)]
+partial record struct RecordBigIntegerId
+{
+}
+
 [Strongly(converters: StronglyConverter.None,
     backingType: StronglyType.BigInteger)]
 public partial struct NoConverterBigIntegerId

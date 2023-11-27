@@ -15,6 +15,12 @@ namespace Strongly.IntegrationTests;
 public class IntIdTests
 {
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordIntId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = 123;

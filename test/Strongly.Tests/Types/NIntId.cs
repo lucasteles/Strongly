@@ -5,6 +5,11 @@ public partial struct NativeIntId
 {
 }
 
+[Strongly(backingType: StronglyType.NativeInt)]
+public partial record struct RecordNativeIntId
+{
+}
+
 [Strongly(converters: StronglyConverter.None, backingType: StronglyType.NativeInt)]
 public partial struct NoConverterNativeIntId
 {

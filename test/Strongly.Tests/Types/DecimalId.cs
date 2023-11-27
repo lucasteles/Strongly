@@ -5,6 +5,11 @@ public partial struct DecimalId
 {
 }
 
+[Strongly(backingType: StronglyType.Decimal)]
+public partial record struct RecordDecimalId
+{
+}
+
 [Strongly(converters: StronglyConverter.None,
     backingType: StronglyType.Decimal)]
 public partial struct NoConverterDecimalId

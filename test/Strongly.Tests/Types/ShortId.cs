@@ -5,6 +5,11 @@ public partial struct ShortId
 {
 }
 
+[Strongly(backingType: StronglyType.Short)]
+public partial record struct RecordShortId
+{
+}
+
 [Strongly(converters: StronglyConverter.None, backingType: StronglyType.Short)]
 public partial struct NoConverterShortId
 {

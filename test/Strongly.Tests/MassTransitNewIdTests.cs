@@ -16,6 +16,13 @@ namespace Strongly.IntegrationTests;
 public class MassTransitNewIdTests
 {
     [Fact]
+    public void RecordHaveEmptyAndNew()
+    {
+        _ = RecordNewIdId1.Empty;
+        _ = RecordNewIdId1.New();
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = NewId.Next();

@@ -19,6 +19,12 @@ public class BigIntegerIdTests
     static readonly BigInteger BigN = BigInteger.Parse(BigNString);
 
     [Fact]
+    public void RecordHaveEmpty()
+    {
+        _ = RecordBigIntegerId.Empty;
+    }
+
+    [Fact]
     public void SameValuesAreEqual()
     {
         var id = new BigInteger(123L);

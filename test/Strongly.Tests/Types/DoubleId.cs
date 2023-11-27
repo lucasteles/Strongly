@@ -5,6 +5,11 @@ public partial struct DoubleId
 {
 }
 
+[Strongly(backingType: StronglyType.Double)]
+public partial record struct RecordDoubleId
+{
+}
+
 [Strongly(converters: StronglyConverter.None,
     backingType: StronglyType.Double)]
 public partial struct NoConverterDoubleId

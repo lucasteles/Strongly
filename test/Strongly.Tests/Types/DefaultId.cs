@@ -10,6 +10,9 @@ namespace Strongly.IntegrationTests.Types;
 partial struct DefaultId1 { }
 
 [Strongly]
+partial record struct RecordDefaultId1 { }
+
+[Strongly]
 public partial struct DefaultId2 { }
 
 [Strongly(converters: StronglyConverter.None)]
